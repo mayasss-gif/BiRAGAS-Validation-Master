@@ -1206,41 +1206,8 @@
   .audio-status.error { color: var(--hot-pink); border-color: var(--hot-pink); }
 
   
-  /* ═══════════════════════ V2 AUDIO · FLOATING FAB + STATUS ═══════════════════════ */
-  .audio-fab {
-    position: fixed;
-    bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
-    left: 18px;
-    min-width: 80px; height: 64px;
-    padding: 0 22px;
-    border-radius: 32px;
-    background: var(--ink);
-    color: var(--cream);
-    border: 2px solid var(--cream);
-    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
-    cursor: pointer;
-    z-index: 1500;
-    display: flex; align-items: center; justify-content: center;
-    gap: 10px;
-    font-family: var(--font-mono); font-size: 13px; font-weight: 800;
-    letter-spacing: 0.14em; text-transform: lowercase;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-    transition: transform 0.12s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
-  }
-  .audio-fab:active { transform: scale(0.93); }
-  .audio-fab.on {
-    background: var(--chartreuse);
-    color: var(--ink);
-    border-color: var(--chartreuse);
-    box-shadow: 0 14px 40px rgba(217,242,92,0.5), 0 0 0 8px rgba(217,242,92,0.18);
-  }
-  .audio-fab.on .icon::after { content: "🔊"; }
-  .audio-fab:not(.on) .icon::after { content: "🔇"; }
-  .audio-fab .icon { font-size: 18px; line-height: 1; }
-
-  .audio-status {
+  /* (removed: floating audio FAB) */
+.audio-status {
     position: fixed;
     top: max(80px, env(safe-area-inset-top, 0px) + 80px);
     left: 50%;
@@ -1388,16 +1355,10 @@
 </head>
 
 <body id="top">
-<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio narration">
-  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
-</button>
 <div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
 
 
 <!-- floating audio toggle + status banner -->
-<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio">
-  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
-</button>
 <div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
 
 
