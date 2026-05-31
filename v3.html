@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BiRAGAS · Validation Master · v3 — Direct Play Test</title>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Major+Mono+Display&family=Unbounded:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mulberry: #3D0E40;
+    --chartreuse: #D9F25C;
+    --cyan: #00D4E1;
+    --cream: #F5EFE0;
+    --ink: #0A0A0A;
+    --hot-pink: #FF3D7F;
+    --font-display: "Bodoni Moda", "Bodoni 72", "Didot", serif;
+    --font-chunk:   "Unbounded", "Helvetica Neue", sans-serif;
+    --font-body:    "Lora", Georgia, serif;
+    --font-mono:    "Major Mono Display", "IBM Plex Mono", ui-monospace, monospace;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 120% 70% at 80% 0%, rgba(217,242,92,0.22), transparent 60%),
+      radial-gradient(ellipse 90% 60% at 10% 90%, rgba(0,212,225,0.15), transparent 60%);
+  }
+
+  /* TOP STRIP */
+  .top-strip {
+    background: var(--ink); color: var(--cream);
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: lowercase;
+    padding: 11px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 24px; flex-wrap: wrap;
+  }
+  .top-strip .ch { color: var(--chartreuse); }
+
+  /* COVER */
+  .cover {
+    padding: clamp(40px, 7vh, 90px) clamp(20px, 4vw, 60px) clamp(60px, 9vh, 120px);
+    border-bottom: 4px solid var(--ink);
+    text-align: center;
+  }
+  .cover h1 {
+    font-family: var(--font-display); font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(48px, 11vw, 140px);
+    line-height: 1.0;
+    margin-bottom: 18px;
+    color: var(--ink);
+  }
+  .cover h1 .accent { color: var(--hot-pink); }
+  .cover .deck {
+    font-family: var(--font-body); font-size: clamp(15px, 2vw, 19px);
+    max-width: 720px; margin: 0 auto 40px;
+    color: rgba(10,10,10,0.7);
+    line-height: 1.6;
+  }
+
+  /* MEGA PLAY BUTTON — the whole point of v3 */
+  .mega-play {
+    display: inline-flex;
+    align-items: center;
+    gap: 18px;
+    padding: 22px 42px;
+    background: var(--mulberry);
+    color: var(--chartreuse);
+    border: 3px solid var(--chartreuse);
+    border-radius: 60px;
+    font-family: var(--font-mono);
+    font-size: clamp(15px, 2.2vw, 20px);
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    box-shadow: 0 16px 44px rgba(61,14,64,0.4), 0 0 0 14px rgba(217,242,92,0.12);
+    transition: transform 0.16s ease, background 0.2s ease, color 0.2s ease;
+    user-select: none;
+  }
+  .mega-play:active { transform: scale(0.96); }
+  .mega-play.playing {
+    background: var(--chartreuse);
+    color: var(--ink);
+    box-shadow: 0 16px 44px rgba(217,242,92,0.5);
+  }
+  .mega-play .triangle {
+    font-size: 1.4em;
+    line-height: 1;
+  }
+
+  /* STATUS BANNER */
+  .status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -200%);
+    max-width: 92vw;
+    padding: 16px 24px;
+    background: var(--ink);
+    color: var(--chartreuse);
+    border: 2px solid var(--chartreuse);
+    border-radius: 32px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.08em;
+    z-index: 8000;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    text-align: center;
+  }
+  .status.show { transform: translate(-50%, 0); }
+  .status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
+
+  /* SECTION GRID — 14 narrations as big tappable cards */
+  .grid-wrap {
+    padding: 40px clamp(20px, 4vw, 60px) 80px;
+  }
+  .grid-title {
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.25em; text-transform: lowercase;
+    text-align: center; margin-bottom: 28px;
+    color: rgba(10,10,10,0.6);
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  .play-card {
+    background: var(--cream);
+    border: 2px solid var(--ink);
+    border-radius: 12px;
+    padding: 22px 20px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.16s ease, background 0.2s ease, color 0.2s ease;
+    text-align: left;
+    user-select: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 100px;
+  }
+  .play-card:active { transform: scale(0.97); }
+  .play-card .num {
+    font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; text-transform: lowercase;
+    color: var(--hot-pink);
+  }
+  .play-card .name {
+    font-family: var(--font-display); font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: 22px;
+    line-height: 1.15;
+    color: var(--ink);
+  }
+  .play-card .desc {
+    font-family: var(--font-body); font-size: 13px;
+    color: rgba(10,10,10,0.65);
+    margin-top: 4px;
+  }
+  .play-card.playing {
+    background: var(--mulberry);
+    color: var(--cream);
+  }
+  .play-card.playing .name { color: var(--chartreuse); }
+  .play-card.playing .num { color: var(--chartreuse); }
+  .play-card.playing .desc { color: rgba(245,239,224,0.75); }
+
+  /* CLOSE / TIP */
+  .colophon {
+    background: var(--ink); color: var(--cream);
+    padding: 40px clamp(20px, 4vw, 60px);
+    text-align: center;
+    font-family: var(--font-mono); font-size: 11px;
+    letter-spacing: 0.16em; text-transform: lowercase;
+    line-height: 1.7;
+  }
+  .colophon .ch { color: var(--chartreuse); }
+
+  /* MOBILE TUNING */
+  @media (max-width: 720px) {
+    .cover h1 { font-size: clamp(40px, 14vw, 80px); }
+    .mega-play { padding: 18px 32px; font-size: 14px; gap: 12px; }
+    .grid { grid-template-columns: 1fr; gap: 10px; }
+    .play-card { padding: 18px 16px; min-height: 88px; }
+    .play-card .name { font-size: 19px; }
+  }
+</style>
+</head>
+<body>
+
+<audio id="player" preload="auto"></audio>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+
+<!-- TOP STRIP -->
+<div class="top-strip">
+  <span><span class="ch">●</span> validation master · v3 · direct-play test</span>
+  <span>ayass bioscience · mmxxvi</span>
+</div>
+
+<!-- COVER -->
+<header class="cover">
+  <h1>How <span class="accent">BiRAGAS</span><br>is <em>Validated</em>.</h1>
+  <p class="deck">
+    Fourteen narrated sections · tap any card to play. v3 uses direct per-button audio
+    handlers with visible error feedback. If this version doesn't play audio on your device,
+    the banner at the top will tell you exactly why.
+  </p>
+  <button class="mega-play" id="megaPlay" type="button" data-audio-src="audio/overview.mp3" data-label="Overview · How BiRAGAS is Validated">
+    <span class="triangle" id="megaIcon">▶</span>
+    <span id="megaLabel">Tap to play overview</span>
+  </button>
+</header>
+
+<!-- GRID OF NARRATIONS -->
+<section class="grid-wrap">
+  <div class="grid-title">— 14 narrations · tap any card to play —</div>
+  <div class="grid" id="grid">
+    <button class="play-card" data-audio-src="audio/methods.mp3" data-label="Five canonical methods">
+      <span class="num">§ foundation</span>
+      <span class="name">Five canonical methods</span>
+      <span class="desc">PC · Granger · MR · do-Calculus · Bradford Hill</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/t1.mp3" data-label="Tier 1 · the math is settled">
+      <span class="num">tier 01</span>
+      <span class="name">Beyond correlation</span>
+      <span class="desc">the math is settled · canonical citations</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/pc_algorithm.mp3" data-label="PC Algorithm">
+      <span class="num">t1·01</span>
+      <span class="name">PC Algorithm</span>
+      <span class="desc">Spirtes &amp; Glymour · 1991/2000</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/granger.mp3" data-label="Granger Causality">
+      <span class="num">t1·02</span>
+      <span class="name">Granger Causality</span>
+      <span class="desc">Granger 1969 · Nobel 2003</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/mendelian_randomization.mp3" data-label="Mendelian Randomization">
+      <span class="num">t1·03</span>
+      <span class="name">Mendelian Randomization</span>
+      <span class="desc">Davey Smith &amp; Ebrahim 2003</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/do_calculus.mp3" data-label="do-Calculus">
+      <span class="num">t1·04</span>
+      <span class="name">do-Calculus</span>
+      <span class="desc">Pearl 1995 · Turing Award 2011</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/bradford_hill.mp3" data-label="Bradford Hill Criteria">
+      <span class="num">t1·05</span>
+      <span class="name">Bradford Hill</span>
+      <span class="desc">Bradford Hill 1965 · foundational</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/t2.mp3" data-label="Tier 2 · the implementation">
+      <span class="num">tier 02</span>
+      <span class="name">Tested code, not promises</span>
+      <span class="desc">five concurrent software-validation layers</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/implementation.mp3" data-label="Implementation detail">
+      <span class="num">t2 · detail</span>
+      <span class="name">Implementation layer</span>
+      <span class="desc">unit · integration · benchmark · CI · review</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/t3.mp3" data-label="Tier 3 · the posture">
+      <span class="num">tier 03</span>
+      <span class="name">Where the posture becomes proof</span>
+      <span class="desc">regulatory + reproducibility + confidential AI</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/posture.mp3" data-label="Posture detail">
+      <span class="num">t3 · detail</span>
+      <span class="name">The posture layer</span>
+      <span class="desc">FDA BQP · CDx · TEE · CMEK kill-switch</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/roadmap.mp3" data-label="12-month roadmap">
+      <span class="num">§ roadmap</span>
+      <span class="name">12 months · committed</span>
+      <span class="desc">Q3 2026 · Q4 2026 · Q1 2027 milestones</span>
+    </button>
+    <button class="play-card" data-audio-src="audio/thesis.mp3" data-label="The defensive thesis">
+      <span class="num">§ manifesto</span>
+      <span class="name">The defensive thesis</span>
+      <span class="desc">same word · radically different mathematical objects</span>
+    </button>
+  </div>
+</section>
+
+<div class="colophon">
+  <div>v3 · direct-play test · <span class="ch">ayass bioscience · mmxxvi</span></div>
+  <div style="margin-top: 6px; opacity: 0.6;">if any tap fails · the banner at top will show the exact error name</div>
+</div>
+
+<script>
+(function() {
+  const player = document.getElementById('player');
+  const status = document.getElementById('status');
+  const megaPlay = document.getElementById('megaPlay');
+  const megaIcon = document.getElementById('megaIcon');
+  const megaLabel = document.getElementById('megaLabel');
+  let activeCard = null;
+  let statusTimer = null;
+
+  function showStatus(msg, isError) {
+    status.textContent = msg;
+    status.classList.toggle('error', !!isError);
+    status.classList.add('show');
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => status.classList.remove('show'), isError ? 6500 : 2500);
+  }
+
+  function stopAll() {
+    try { player.pause(); } catch(_) {}
+    if (activeCard) {
+      activeCard.classList.remove('playing');
+      activeCard = null;
+    }
+    megaPlay.classList.remove('playing');
+    megaIcon.textContent = '▶';
+    megaLabel.textContent = 'Tap to play overview';
+  }
+
+  function play(button) {
+    const src = button.dataset.audioSrc;
+    const label = button.dataset.label || src;
+
+    // If this same button is currently playing, stop it
+    if (activeCard === button && !player.paused) {
+      stopAll();
+      showStatus('stopped');
+      return;
+    }
+
+    // Stop anything currently playing
+    if (activeCard) activeCard.classList.remove('playing');
+    megaPlay.classList.remove('playing');
+
+    showStatus('loading · ' + label);
+
+    // FULL RESET before each new play — iOS likes this
+    try { player.pause(); } catch(_) {}
+    player.removeAttribute('src');
+    try { player.load(); } catch(_) {}
+    player.src = src;
+    try { player.load(); } catch(_) {}
+
+    const p = player.play();
+    if (p && typeof p.then === 'function') {
+      p.then(() => {
+        activeCard = button;
+        button.classList.add('playing');
+        if (button === megaPlay) {
+          megaIcon.textContent = '⏸';
+          megaLabel.textContent = 'Playing — tap to stop';
+        }
+        showStatus('▶ ' + label);
+      }).catch(err => {
+        const name = (err && err.name) || 'Error';
+        const msg = (err && err.message) || String(err);
+        showStatus('⚠ ' + name + ' — ' + msg.slice(0, 80), true);
+        console.error('[v3 audio] play failed:', err);
+        // Fall back to alert() so the user definitely sees the error
+        if (name === 'NotAllowedError' || name === 'NotSupportedError') {
+          setTimeout(() => alert('Audio error: ' + name + '\n\n' + msg + '\n\nIf iOS Safari, check that the silent switch is OFF and that Settings > Safari > Auto-Play is allowed.'), 100);
+        }
+      });
+    }
+  }
+
+  // Direct per-button click handlers
+  megaPlay.addEventListener('click', function(e) {
+    e.preventDefault();
+    play(megaPlay);
+  });
+
+  document.querySelectorAll('.play-card').forEach(card => {
+    card.addEventListener('click', function(e) {
+      e.preventDefault();
+      play(card);
+    });
+  });
+
+  // Lifecycle
+  player.addEventListener('ended', () => {
+    stopAll();
+    showStatus('ended');
+  });
+  player.addEventListener('error', () => {
+    const err = player.error;
+    const codes = { 1: 'ABORTED', 2: 'NETWORK', 3: 'DECODE', 4: 'SRC_NOT_SUPPORTED' };
+    const code = err ? (codes[err.code] || ('CODE_' + err.code)) : 'UNKNOWN';
+    showStatus('⚠ audio · ' + code, true);
+    console.error('[v3 audio] element error:', err);
+  });
+
+  console.log('[v3] ready · ' + document.querySelectorAll('.play-card').length + ' cards wired');
+})();
+</script>
+
+</body>
+</html>
