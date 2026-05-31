@@ -1145,6 +1145,66 @@
     .now-playing { left: 12px; right: 12px; bottom: 12px; }
   }
 
+  
+  /* ═══════════════════════ FLOATING AUDIO + STATUS ═══════════════════════ */
+  .audio-fab {
+    position: fixed;
+    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+    left: 18px;
+    min-width: 64px; height: 64px; padding: 0 18px;
+    border-radius: 32px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--cream);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    cursor: pointer;
+    z-index: 1500;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: lowercase;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .audio-fab:active { transform: scale(0.93); }
+  .audio-fab.on {
+    background: var(--chartreuse);
+    color: var(--ink);
+    border-color: var(--chartreuse);
+    box-shadow: 0 12px 32px rgba(217,242,92,0.5);
+  }
+  .audio-fab .icon { font-size: 18px; line-height: 1; }
+  .audio-fab.on .icon::after { content: "🔊"; }
+  .audio-fab:not(.on) .icon::after { content: "🔇"; }
+
+  /* status banner — visible feedback */
+  .audio-status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -120%);
+    max-width: 92vw;
+    padding: 12px 20px;
+    background: var(--ink);
+    color: var(--chartreuse);
+    border: 1.5px solid var(--chartreuse);
+    border-radius: 28px;
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.06em;
+    z-index: 1600;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audio-status.show { transform: translate(-50%, 0); opacity: 1; }
+  .audio-status.error { color: var(--hot-pink); border-color: var(--hot-pink); }
+
   /* ═══════════════════════ MOBILE NAV ═══════════════════════ */
   .nav-fab {
     position: fixed;
@@ -1263,6 +1323,13 @@
 </head>
 
 <body id="top">
+
+<!-- floating audio toggle + status banner -->
+<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio">
+  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
+</button>
+<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
+
 
 <div class="cursor" id="cur"></div>
 <div class="trail" id="trail-1"></div>
@@ -1713,20 +1780,36 @@
   }
   typeStep();
 
-  // ── audio · clickable titles + global toggle ──
+  // ── audio · clickable titles + global toggle (ROBUST · v3) ──
   const player    = document.getElementById("player");
   const audioBtn  = document.getElementById("audioBtn");
   const audioBtnLbl = document.getElementById("audioBtnLabel");
+  const audioFab  = document.getElementById("audioFab");
+  const audioFabLbl = document.getElementById("audioFabLabel");
+  const audioStatus = document.getElementById("audioStatus");
   const nowPlay   = document.getElementById("nowPlay");
   const npLabel   = document.getElementById("npLabel");
   const npClose   = document.getElementById("npClose");
   let audioOn = false;
+  let audioPrimed = false;
   let activeKey = null;
+  let statusTimer = null;
+
+  // VISIBLE STATUS BANNER · so we can SEE what's happening
+  function showStatus(msg, isError) {
+    if (!audioStatus) return;
+    audioStatus.textContent = msg;
+    audioStatus.classList.toggle("error", !!isError);
+    audioStatus.classList.add("show");
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => audioStatus.classList.remove("show"), isError ? 5500 : 2200);
+  }
 
   function setBtnState() {
-    audioBtn.classList.toggle("on", audioOn);
-    audioBtn.setAttribute("aria-pressed", audioOn ? "true" : "false");
-    audioBtnLbl.textContent = audioOn ? "audio · on" : "audio · off";
+    if (audioBtn)  { audioBtn.classList.toggle("on", audioOn); audioBtn.setAttribute("aria-pressed", audioOn ? "true" : "false"); }
+    if (audioBtnLbl) audioBtnLbl.textContent = audioOn ? "audio · on" : "audio · off";
+    if (audioFab)  { audioFab.classList.toggle("on", audioOn); audioFab.setAttribute("aria-pressed", audioOn ? "true" : "false"); }
+    if (audioFabLbl) audioFabLbl.textContent = audioOn ? "audio · on" : "audio · off";
   }
   setBtnState();
 
@@ -1737,12 +1820,31 @@
   }
 
   function stopAudio() {
-    player.pause();
-    player.removeAttribute("src");
-    player.load();
+    try { player.pause(); } catch(_) {}
     activeKey = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+  }
+
+  // iOS Safari requires the FIRST audio.play() to happen synchronously inside
+  // a user-gesture handler. We prime the element with a 1-frame silent play
+  // on the first tap; subsequent src changes then work without restriction.
+  const SILENT_MP3 = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAAEgABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFj/////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQAAAAAAAAABIBzybLHAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+
+  function primeAudio() {
+    if (audioPrimed) return Promise.resolve();
+    return new Promise((resolve) => {
+      try {
+        player.src = SILENT_MP3;
+        const p = player.play();
+        if (p && typeof p.then === "function") {
+          p.then(() => { audioPrimed = true; resolve(); })
+           .catch(err => { resolve(); /* prime failed, will try anyway */ });
+        } else {
+          audioPrimed = true; resolve();
+        }
+      } catch(err) { resolve(); }
+    });
   }
 
   function playFor(el) {
@@ -1751,45 +1853,93 @@
     const label = el.dataset.label || key;
     if (activeKey === key && !player.paused) {
       stopAudio();
+      showStatus("stopped");
       return;
     }
     if (!audioOn) { audioOn = true; setBtnState(); }
-    player.src = src;
-    player.play().then(() => {
-      activeKey = key;
-      npLabel.textContent = label;
-      nowPlay.classList.add("on");
-      nowPlay.classList.toggle("is-sub", key.endsWith("_sub"));
-      paintActive();
-    }).catch(() => {
-      activeKey = null;
-      nowPlay.classList.remove("on", "is-sub");
-      paintActive();
-    });
+    showStatus("loading · " + (label.length > 40 ? label.slice(0, 40) + "…" : label));
+
+    // SYNCHRONOUSLY set src + call play() inside the gesture window
+    try {
+      player.src = src;
+      player.load();
+      const playPromise = player.play();
+      if (playPromise && typeof playPromise.then === "function") {
+        playPromise.then(() => {
+          activeKey = key;
+          npLabel.textContent = label;
+          nowPlay.classList.add("on");
+          nowPlay.classList.toggle("is-sub", key.endsWith("_sub"));
+          paintActive();
+          audioPrimed = true;
+          showStatus("▶ " + (label.length > 40 ? label.slice(0, 40) + "…" : label));
+        }).catch(err => {
+          // VISIBLE error so we can debug
+          const name = err && err.name ? err.name : "Error";
+          const msg = err && err.message ? err.message : String(err);
+          activeKey = null;
+          nowPlay.classList.remove("on", "is-sub");
+          paintActive();
+          showStatus(`⚠ ${name}: ${msg}`.slice(0, 90), true);
+          console.error("[audio] play failed:", err, "src:", src);
+        });
+      } else {
+        // Older browsers — assume it worked
+        activeKey = key;
+        npLabel.textContent = label;
+        nowPlay.classList.add("on");
+        paintActive();
+        showStatus("▶ " + label);
+      }
+    } catch(err) {
+      showStatus("⚠ " + (err.message || err), true);
+      console.error("[audio] sync error:", err);
+    }
   }
 
-  document.addEventListener("click", e => {
+  // ── Click handler ── using both pointerdown (instant on mobile) AND click (fallback),
+  // with a dedup flag so we don't double-fire.
+  let lastFireTs = 0;
+  function handleAudioTrigger(e) {
     const el = e.target.closest("[data-audio]");
     if (!el) return;
+    const now = Date.now();
+    if (now - lastFireTs < 400) return;  // dedup
+    lastFireTs = now;
     e.preventDefault();
+    e.stopPropagation();
     playFor(el);
-  });
+  }
+  document.addEventListener("click", handleAudioTrigger);
 
+  // ── Toggle handler — for both the top-strip button AND the floating FAB ──
   function toggleAudio(e) {
-    if (e) { e.stopPropagation(); }
+    if (e) e.stopPropagation();
+    const now = Date.now();
+    if (now - lastFireTs < 400) return;
+    lastFireTs = now;
     audioOn = !audioOn;
     setBtnState();
+    showStatus(audioOn ? "audio · on" : "audio · off");
     if (!audioOn) stopAudio();
+    if (audioOn) primeAudio();  // prime on user gesture so subsequent plays work
   }
-  // Click only — touch-action: manipulation on the button removes the iOS tap delay
-  // so we don't need a separate touchend handler (which would cause double-fire).
-  audioBtn.addEventListener("click", toggleAudio);
+  if (audioBtn) audioBtn.addEventListener("click", toggleAudio);
+  if (audioFab) audioFab.addEventListener("click", toggleAudio);
 
-  npClose.addEventListener("click", stopAudio);
+  if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
   player.addEventListener("ended", () => {
     activeKey = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+    showStatus("ended");
+  });
+  player.addEventListener("error", (e) => {
+    const err = player.error;
+    const codes = { 1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED" };
+    const code = err ? (codes[err.code] || ("CODE_" + err.code)) : "UNKNOWN";
+    showStatus(`⚠ audio error · ${code}`, true);
+    console.error("[audio] element error:", err);
   });
 
   // ── variable-font weight tied to scroll ──
