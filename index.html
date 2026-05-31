@@ -1799,16 +1799,12 @@
   const audioFab  = document.getElementById("audioFab");
   const audioFabLbl = document.getElementById("audioFabLabel");
   const audioStatus = document.getElementById("audioStatus");
-  const nowPlay   = document.getElementById("nowPlay");
-  const npLabel   = document.getElementById("npLabel");
-  const npClose   = document.getElementById("npClose");
-
-  let activeButton = null;
+  let activeButton = null; let activeElement = null;
   let activeKey = null;
   let statusTimer = null;
 
   function showStatus(msg, isError) {
-    if (!audioStatus) return;
+    if (!document.getElementById("audioStatus")) return;
     audioStatus.textContent = msg;
     audioStatus.classList.toggle("error", !!isError);
     audioStatus.classList.add("show");
@@ -1840,17 +1836,17 @@
   function stopAudio() {
     player.pause();
     activeKey = null;
+    activeElement = null;
     activeButton = null;
-    nowPlay.classList.remove("on", "is-sub");
     paintActive();
     setOnUI(false);
   }
 
   // EXACT V4 PATTERN — set src, call load, call play. Nothing else.
   function playSrc(src, label, key, el) {
-    if (activeKey === key && !player.paused) {
+    // Track playing by ELEMENT identity (not key) — multiple cards can share the same audio file
+    if (activeElement === el && el !== null && !player.paused) {
       stopAudio();
-      showStatus("stopped");
       return;
     }
     showStatus("loading · " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
@@ -1862,8 +1858,8 @@
     if (p && typeof p.then === "function") {
       p.then(() => {
         activeKey = key;
+        activeElement = el;
         if (el) {
-          npLabel.textContent = label;
           nowPlay.classList.add("on");
           nowPlay.classList.toggle("is-sub", key && key.endsWith("_sub"));
         }
@@ -1905,12 +1901,9 @@
     });
   });
 
-  if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
-
   player.addEventListener("ended", () => {
     activeKey = null;
     activeButton = null;
-    nowPlay.classList.remove("on", "is-sub");
     paintActive();
     setOnUI(false);
     showStatus("ended");
