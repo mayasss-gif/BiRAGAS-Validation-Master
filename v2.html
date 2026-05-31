@@ -1,0 +1,2195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BiRAGAS · Validation Master · v2 — Fresh Audio Build</title>
+<meta name="description" content="BiRAGAS Validation Master — the comprehensive defensive brief for every causal-inference claim. 9 validation levels · 5 canonical methods · 26 tracked claims · operational today.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..900&family=Lora:ital,wght@0,400..700;1,400..700&family=Major+Mono+Display&family=Unbounded:wght@300;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --mulberry: #3D0E40;
+    --mulberry-deep: #2A0830;
+    --chartreuse: #D9F25C;
+    --chartreuse-soft: #E5F77C;
+    --cyan: #00D4E1;
+    --cream: #F5EFE0;
+    --cream-deep: #E8DEC8;
+    --ink: #0A0A0A;
+    --hot-pink: #FF3D7F;
+    --rule: rgba(10,10,10,0.18);
+    --rule-light: rgba(245,239,224,0.18);
+
+    --font-display: "Bodoni Moda", "Bodoni 72", "Didot", serif;
+    --font-chunk:   "Unbounded", "Helvetica Neue", sans-serif;
+    --font-body:    "Lora", Georgia, serif;
+    --font-mono:    "Major Mono Display", "IBM Plex Mono", ui-monospace, monospace;
+
+    --gutter: clamp(20px, 4vw, 80px);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 17px;
+    line-height: 1.55;
+    overflow-x: hidden;
+    cursor: none;
+    /* slow conic mesh that breathes behind everything */
+    background-image:
+      radial-gradient(ellipse 120% 70% at 80% 0%, rgba(217,242,92,0.22), transparent 60%),
+      radial-gradient(ellipse 90% 60% at 10% 90%, rgba(0,212,225,0.15), transparent 60%);
+  }
+
+  /* paper grain */
+  body::before {
+    content: "";
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 200;
+    opacity: 0.28;
+    mix-blend-mode: multiply;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='280'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.92' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.07 0 0 0 0 0.06 0 0 0 0 0.05 0 0 0 0.55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    background-size: 280px 280px;
+    animation: grain 1.6s steps(6) infinite;
+  }
+  @keyframes grain {
+    0%   { transform: translate(0,0); }
+    16%  { transform: translate(-2%, 1%); }
+    33%  { transform: translate(2%, -1%); }
+    50%  { transform: translate(-1%, 2%); }
+    66%  { transform: translate(3%, -2%); }
+    83%  { transform: translate(-2%, -1%); }
+    100% { transform: translate(0,0); }
+  }
+
+  /* ─── CURSOR · chartreuse blob with trailing copies ─── */
+  .cursor {
+    position: fixed; top: 0; left: 0;
+    width: 28px; height: 28px;
+    background: var(--chartreuse);
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9999;
+    transform: translate(-50%, -50%);
+    mix-blend-mode: difference;
+    transition: width 0.25s, height 0.25s, background 0.2s;
+  }
+  .cursor.dark { background: var(--mulberry); mix-blend-mode: normal; }
+  .trail {
+    position: fixed; top: 0; left: 0;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 9998;
+    transform: translate(-50%, -50%);
+    background: var(--chartreuse);
+    opacity: 0.4;
+    mix-blend-mode: difference;
+  }
+  @media (pointer: coarse) {
+    body { cursor: auto; }
+    .cursor, .trail { display: none; }
+  }
+
+  /* ─── ANIMATED FLOATING TYPOGRAPHIC SPECIMENS ─── */
+  .floating-spec {
+    position: fixed;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 400;
+    pointer-events: none;
+    z-index: 5;
+    opacity: 0.06;
+    user-select: none;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TOP STRIP
+  ═════════════════════════════════════════════════════════════════ */
+  .top-strip {
+    background: var(--ink);
+    color: var(--cream);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: lowercase;
+    padding: 11px var(--gutter);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 50;
+    border-bottom: 1px solid var(--ink);
+  }
+  .top-strip .ch { color: var(--chartreuse); }
+  .top-strip .cy { color: var(--cyan); }
+  .top-strip .blink { animation: blink 1.4s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0.15; } }
+
+  /* ─── MULTI-LANE MARQUEE ─── */
+  .marquees {
+    position: relative;
+    z-index: 40;
+    border-bottom: 2px solid var(--ink);
+    background: var(--cream-deep);
+    overflow: hidden;
+  }
+  .marquee-lane {
+    overflow: hidden;
+    border-bottom: 1px solid var(--rule);
+    padding: 8px 0;
+  }
+  .marquee-lane:last-child { border-bottom: none; }
+  .marquee-lane .track {
+    display: flex;
+    gap: 50px;
+    white-space: nowrap;
+    will-change: transform;
+  }
+  .marquee-lane.l1 .track { animation: marq 60s linear infinite; font-family: var(--font-display); font-style: italic; font-size: 24px; font-variation-settings: "opsz" 96, "wght" 500; }
+  .marquee-lane.l2 .track { animation: marq-rev 80s linear infinite; font-family: var(--font-chunk); font-weight: 700; font-size: 13px; letter-spacing: 0.16em; text-transform: uppercase; }
+  .marquee-lane.l3 .track { animation: marq 100s linear infinite; font-family: var(--font-mono); font-size: 14px; letter-spacing: 0.06em; }
+  .marquee-lane.l2 { background: var(--mulberry); color: var(--chartreuse); }
+  .marquee-lane.l3 { color: var(--mulberry); }
+  .marquee-lane .star::before { content: "✦"; margin-right: 14px; color: var(--hot-pink); }
+  .marquee-lane.l2 .star::before { color: var(--chartreuse); }
+  @keyframes marq     { to { transform: translateX(-50%); } }
+  @keyframes marq-rev { from { transform: translateX(-50%); } to { transform: translateX(0); } }
+
+  /* ═══════════════════════════════════════════════════════════════
+     COVER POSTER · the mandala centerpiece
+  ═════════════════════════════════════════════════════════════════ */
+  .cover {
+    position: relative;
+    padding: clamp(40px, 7vh, 90px) var(--gutter) clamp(60px, 9vh, 120px);
+    overflow: hidden;
+    border-bottom: 4px solid var(--ink);
+  }
+  /* rotating conic gradient backdrop */
+  .cover::before {
+    content: "";
+    position: absolute;
+    top: -30%; left: -30%;
+    width: 160%; height: 160%;
+    background:
+      conic-gradient(from 0deg,
+        var(--cream) 0deg,
+        rgba(217,242,92,0.4) 60deg,
+        var(--cream) 120deg,
+        rgba(0,212,225,0.3) 180deg,
+        var(--cream) 240deg,
+        rgba(61,14,64,0.18) 300deg,
+        var(--cream) 360deg);
+    animation: spin-bg 120s linear infinite;
+    z-index: 0;
+    opacity: 0.65;
+  }
+  @keyframes spin-bg { to { transform: rotate(360deg); } }
+
+  .cover-inner {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  @media (max-width: 1100px) {
+    .cover-inner { grid-template-columns: 1fr; gap: 50px; }
+  }
+
+  .cover-meta-row {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--ink);
+    margin-bottom: 50px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .cover-meta-row .right { text-align: right; color: var(--mulberry); }
+  .cover-meta-row .ch { color: var(--chartreuse); background: var(--ink); padding: 2px 8px; }
+
+  .cover-headline {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(60px, 12vw, 200px);
+    line-height: 0.78;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    text-align: left;
+    position: relative;
+  }
+  .cover-headline .line { display: block; }
+  .cover-headline .ital-thin {
+    font-variation-settings: "opsz" 96, "wght" 400;
+    color: var(--mulberry);
+  }
+  .cover-headline .chunk {
+    font-family: var(--font-chunk);
+    font-style: normal;
+    font-weight: 900;
+    color: var(--ink);
+    -webkit-text-stroke: 0;
+    font-size: 0.78em;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 2;
+  }
+  .cover-headline .chunk::before {
+    content: "";
+    position: absolute;
+    inset: 0.1em -0.15em -0.05em -0.1em;
+    background: var(--chartreuse);
+    z-index: -1;
+    transform: rotate(-1deg);
+  }
+  .cover-headline .splash {
+    background: var(--mulberry);
+    color: var(--chartreuse);
+    padding: 0 0.1em;
+    display: inline-block;
+    transform: rotate(-2deg);
+  }
+  .cover-headline .vol {
+    display: block;
+    font-family: var(--font-mono);
+    font-style: normal;
+    font-size: 0.16em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--mulberry);
+    margin-top: 0.3em;
+  }
+
+  .cover-deck {
+    margin-top: 40px;
+    max-width: 500px;
+    font-family: var(--font-body);
+    font-style: italic;
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .cover-deck::before {
+    content: "❡";
+    color: var(--hot-pink);
+    margin-right: 8px;
+    font-style: normal;
+  }
+
+  /* ─── MANDALA — the rotating ring of 25 module names ─── */
+  .mandala-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .mandala-wrap svg { width: 100%; height: 100%; }
+  .mandala-ring {
+    transform-origin: center;
+    animation: spin 90s linear infinite;
+  }
+  .mandala-ring.inner { animation: spin-rev 60s linear infinite; }
+  .mandala-pulse {
+    transform-origin: center;
+    animation: pulse 4s ease-in-out infinite;
+  }
+  @keyframes spin     { to { transform: rotate(360deg); } }
+  @keyframes spin-rev { to { transform: rotate(-360deg); } }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50%      { transform: scale(1.04); opacity: 0.6; }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     STAT BAND — counters
+  ═════════════════════════════════════════════════════════════════ */
+  .stats {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 50px var(--gutter);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 40px;
+    border-bottom: 2px solid var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .stats .item { position: relative; z-index: 2; }
+  .stats .k {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(70px, 11vw, 180px);
+    line-height: 0.85;
+    color: var(--chartreuse);
+    letter-spacing: -0.04em;
+  }
+  .stats .item:nth-child(2) .k { color: var(--cyan); }
+  .stats .item:nth-child(3) .k { color: var(--hot-pink); }
+  .stats .item:nth-child(4) .k { color: var(--cream); }
+  .stats .v {
+    font-family: var(--font-chunk);
+    font-weight: 500;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--cream);
+    margin-top: 14px;
+    border-top: 1px solid var(--cream);
+    padding-top: 10px;
+  }
+  @media (max-width: 880px) {
+    .stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     CAUSION POSTER
+  ═════════════════════════════════════════════════════════════════ */
+  .causion-poster {
+    padding: clamp(80px, 12vh, 160px) var(--gutter);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 2px solid var(--ink);
+  }
+  .causion-poster .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    color: var(--mulberry);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .causion-poster .eyebrow::before {
+    content: "§02"; color: var(--hot-pink); font-weight: 700;
+  }
+  .causion-poster h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 600;
+    font-size: clamp(70px, 14vw, 240px);
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+    color: var(--ink);
+    transform: rotate(-1deg);
+    margin-bottom: 24px;
+    position: relative;
+  }
+  .causion-poster h2 .acc {
+    background: var(--chartreuse);
+    color: var(--ink);
+    padding: 0 0.15em;
+    display: inline-block;
+    transform: rotate(2deg);
+  }
+  .causion-poster .deck {
+    max-width: 720px;
+    font-family: var(--font-body);
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.6;
+    color: var(--ink);
+    margin-bottom: 50px;
+  }
+  .causion-poster .deck b { color: var(--mulberry); }
+
+  .ask-bar {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 24px 30px;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-size: clamp(20px, 2.2vw, 32px);
+    line-height: 1.4;
+    font-variation-settings: "opsz" 36, "wght" 400;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    max-width: 800px;
+    margin-top: 40px;
+    border-left: 8px solid var(--chartreuse);
+    position: relative;
+  }
+  .ask-bar::before {
+    content: "$";
+    font-family: var(--font-mono);
+    color: var(--chartreuse);
+    font-style: normal;
+  }
+  .ask-bar .typer::after {
+    content: "▌";
+    color: var(--chartreuse);
+    animation: caret 0.9s steps(2) infinite;
+  }
+  @keyframes caret { 50% { opacity: 0; } }
+
+  /* causion flow arrows */
+  .causion-flow {
+    margin-top: 60px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 30px;
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--mulberry);
+    position: relative;
+  }
+  .causion-flow .step {
+    padding: 18px 12px;
+    border: 1px solid var(--ink);
+    background: var(--cream-deep);
+    position: relative;
+  }
+  .causion-flow .step .n {
+    font-family: var(--font-chunk);
+    font-weight: 700;
+    color: var(--hot-pink);
+    font-size: 11px;
+    margin-bottom: 8px;
+    display: block;
+  }
+  .causion-flow .step strong {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 500;
+    font-size: 22px;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 6px;
+  }
+  .causion-flow .step:not(:last-child)::after {
+    content: "→";
+    position: absolute;
+    right: -22px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--chartreuse);
+    font-size: 30px;
+    z-index: 2;
+    background: var(--cream-deep);
+    padding: 0 4px;
+    line-height: 1;
+  }
+  @media (max-width: 760px) {
+    .causion-flow { grid-template-columns: 1fr; }
+    .causion-flow .step:not(:last-child)::after { right: 50%; top: auto; bottom: -22px; transform: translateX(50%) rotate(90deg); }
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     TIER POSTERS
+  ═════════════════════════════════════════════════════════════════ */
+  .tier {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(80px, 12vh, 160px) var(--gutter);
+    border-bottom: 4px solid var(--ink);
+  }
+  .tier.t1 { background: var(--mulberry); color: var(--cream); }
+  .tier.t2 { background: var(--chartreuse); color: var(--ink); }
+  .tier.t3 { background: var(--cyan); color: var(--ink); }
+
+  /* full-bleed giant T·0X */
+  .tier .mega {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 700;
+    font-size: clamp(280px, 50vw, 720px);
+    line-height: 0.78;
+    letter-spacing: -0.06em;
+    color: transparent;
+    -webkit-text-stroke: 2px currentColor;
+    opacity: 0.18;
+    pointer-events: none;
+    user-select: none;
+    z-index: 1;
+    transition: opacity 0.6s, -webkit-text-stroke 0.6s;
+  }
+  .tier:hover .mega { opacity: 0.4; -webkit-text-stroke: 4px currentColor; }
+
+  .tier-head {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: end;
+    gap: 30px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid currentColor;
+    margin-bottom: 60px;
+  }
+  .tier-head .label {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .tier-head .label .badge {
+    display: inline-flex;
+    width: 36px; height: 36px;
+    border: 2px solid currentColor;
+    border-radius: 50%;
+    align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 36, "wght" 600;
+    font-size: 18px;
+  }
+  .tier-head h2 {
+    font-family: var(--font-chunk);
+    font-weight: 900;
+    font-size: clamp(54px, 9vw, 140px);
+    line-height: 0.88;
+    letter-spacing: -0.04em;
+    text-transform: uppercase;
+    color: inherit;
+  }
+  .tier-head h2 .ital {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    text-transform: none;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+  .tier-head .right-meta {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: lowercase;
+    text-align: right;
+    line-height: 1.6;
+  }
+  .tier .deck {
+    position: relative; z-index: 2;
+    max-width: 70ch;
+    font-family: var(--font-body);
+    font-size: clamp(17px, 1.4vw, 21px);
+    line-height: 1.6;
+    margin-bottom: 50px;
+  }
+  .tier .deck b { color: inherit; font-weight: 700; }
+  .tier.t1 .deck b { background: var(--chartreuse); color: var(--ink); padding: 0 6px; }
+  .tier.t3 .deck b { background: var(--mulberry); color: var(--cream); padding: 0 6px; }
+
+  /* MODULE CARDS */
+  .cards {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
+  }
+  .card {
+    background: var(--cream);
+    color: var(--ink);
+    border: 2px solid var(--ink);
+    padding: 22px 22px 60px;
+    position: relative;
+    transition: transform 0.35s cubic-bezier(.2,.6,.1,1), box-shadow 0.35s;
+    transform-style: preserve-3d;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 50% 0%, var(--chartreuse) 0, transparent 70%);
+    opacity: 0;
+    transition: opacity 0.35s;
+    pointer-events: none;
+  }
+  .card:hover::before { opacity: 0.6; }
+  .card:hover {
+    transform: translate(-4px, -4px) rotate(-0.6deg);
+    box-shadow: 8px 8px 0 var(--ink);
+  }
+  .tier.t1 .card { background: var(--cream); }
+  .tier.t2 .card { background: var(--cream); }
+  .tier.t3 .card { background: var(--cream); }
+
+  .card .badge {
+    position: absolute;
+    top: 14px; right: 14px;
+    width: 38px; height: 38px;
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center; justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--mulberry);
+    background: var(--cream);
+    transition: transform 0.5s ease;
+  }
+  .card:hover .badge { transform: rotate(360deg); background: var(--chartreuse); }
+
+  .card .num {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 700;
+    font-size: 80px;
+    line-height: 0.85;
+    color: var(--mulberry);
+    letter-spacing: -0.04em;
+    margin-bottom: -4px;
+  }
+  .tier.t2 .card .num { color: var(--mulberry); }
+  .tier.t3 .card .num { color: var(--mulberry); }
+
+  .card .name {
+    font-family: var(--font-chunk);
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    color: var(--ink);
+    letter-spacing: -0.025em;
+    text-transform: uppercase;
+  }
+  .card .name-sub {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 24, "wght" 400;
+    font-size: 16px;
+    color: var(--mulberry);
+    margin-bottom: 14px;
+  }
+  .card .spec {
+    border-top: 1px solid var(--rule);
+    padding-top: 12px;
+    margin-bottom: 14px;
+    display: grid;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    line-height: 1.5;
+  }
+  .card .spec .row { display: grid; grid-template-columns: 64px 1fr; gap: 12px; }
+  .card .spec .k { color: var(--hot-pink); letter-spacing: 0.1em; text-transform: lowercase; }
+  .card .func {
+    font-family: var(--font-body);
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+  .card .func::before {
+    content: "❯ ";
+    color: var(--hot-pink);
+    font-weight: 700;
+  }
+  .card .scope-tag {
+    position: absolute;
+    bottom: 14px; left: 22px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    color: var(--mulberry);
+    border: 1px solid var(--mulberry);
+    padding: 2px 8px;
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     FLOW POSTER (end-to-end)
+  ═════════════════════════════════════════════════════════════════ */
+  .flow {
+    background: var(--ink);
+    color: var(--cream);
+    padding: clamp(80px, 12vh, 160px) var(--gutter);
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--ink);
+  }
+  .flow .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: lowercase;
+    color: var(--chartreuse);
+    margin-bottom: 20px;
+  }
+  .flow h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(54px, 9vw, 150px);
+    line-height: 0.86;
+    letter-spacing: -0.04em;
+    margin-bottom: 50px;
+  }
+  .flow h2 .acc { color: var(--chartreuse); }
+  .flow h2 .pink { color: var(--hot-pink); }
+
+  .flow-svg-wrap {
+    margin-top: 40px;
+    padding: 30px 0;
+    border-top: 1px solid var(--chartreuse);
+    border-bottom: 1px solid var(--chartreuse);
+    overflow-x: auto;
+  }
+  .flow-svg-wrap svg {
+    display: block;
+    min-width: 900px;
+    width: 100%;
+    height: auto;
+  }
+  .flow-path {
+    stroke-dasharray: 2400;
+    stroke-dashoffset: 2400;
+    animation: draw 6s ease-out forwards;
+  }
+  .flow-path.in { animation-play-state: running; }
+  @keyframes draw { to { stroke-dashoffset: 0; } }
+
+  /* ═══════════════════════════════════════════════════════════════
+     MANIFESTO POSTER
+  ═════════════════════════════════════════════════════════════════ */
+  .manifesto {
+    background: var(--chartreuse);
+    color: var(--ink);
+    padding: clamp(100px, 18vh, 220px) var(--gutter);
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 4px solid var(--ink);
+  }
+  /* animated paint splatter */
+  .manifesto::before {
+    content: "";
+    position: absolute;
+    top: 10%; left: 5%;
+    width: 240px; height: 240px;
+    background: var(--mulberry);
+    border-radius: 50% 60% 50% 70% / 50% 50% 70% 50%;
+    animation: blob 12s ease-in-out infinite;
+    z-index: 1;
+    opacity: 0.18;
+  }
+  .manifesto::after {
+    content: "";
+    position: absolute;
+    bottom: 8%; right: 6%;
+    width: 320px; height: 320px;
+    background: var(--cyan);
+    border-radius: 60% 50% 70% 50% / 50% 60% 50% 70%;
+    animation: blob 16s ease-in-out infinite reverse;
+    z-index: 1;
+    opacity: 0.2;
+  }
+  @keyframes blob {
+    0%, 100% { transform: translate(0,0) scale(1) rotate(0deg); border-radius: 50% 60% 50% 70% / 50% 50% 70% 50%; }
+    25% { transform: translate(20px,-20px) scale(1.1) rotate(60deg); border-radius: 70% 40% 60% 50% / 60% 70% 40% 50%; }
+    50% { transform: translate(-15px,15px) scale(0.95) rotate(120deg); border-radius: 40% 70% 50% 60% / 50% 40% 70% 60%; }
+    75% { transform: translate(10px,10px) scale(1.05) rotate(200deg); border-radius: 60% 50% 70% 40% / 70% 50% 60% 40%; }
+  }
+  .manifesto > * { position: relative; z-index: 2; }
+
+  .manifesto .small {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: lowercase;
+    color: var(--mulberry);
+    margin-bottom: 60px;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .manifesto .small::before, .manifesto .small::after {
+    content: ""; width: 40px; height: 1px; background: var(--mulberry);
+  }
+  .manifesto h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(42px, 7.5vw, 130px);
+    line-height: 0.92;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 28px;
+  }
+  .manifesto h2 .strike {
+    text-decoration: line-through;
+    text-decoration-color: var(--hot-pink);
+    text-decoration-thickness: 5px;
+  }
+  .manifesto h2.next {
+    font-variation-settings: "opsz" 96, "wght" 700;
+  }
+  .manifesto h2.next .mul { color: var(--mulberry); }
+  .manifesto .period {
+    display: inline-block;
+    width: 0.22em; height: 0.22em;
+    background: var(--hot-pink);
+    border-radius: 50%;
+    transform: translateY(0.05em);
+    margin-left: 0.05em;
+    animation: pulse 2s ease-in-out infinite;
+  }
+  .manifesto .tag {
+    margin-top: 80px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: lowercase;
+    color: var(--mulberry);
+  }
+
+  /* ═══════════════════════════════════════════════════════════════
+     COLOPHON
+  ═════════════════════════════════════════════════════════════════ */
+  .colophon {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 80px var(--gutter);
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1fr;
+    gap: 50px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    line-height: 1.85;
+  }
+  .colophon h4 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-variation-settings: "opsz" 36, "wght" 500;
+    text-transform: none;
+    font-size: 28px;
+    letter-spacing: -0.01em;
+    color: var(--chartreuse);
+    margin-bottom: 14px;
+  }
+  .colophon a {
+    color: var(--cream);
+    text-decoration: none;
+    border-bottom: 1px solid var(--chartreuse);
+  }
+  .colophon a:hover { background: var(--chartreuse); color: var(--ink); }
+  @media (max-width: 880px) { .colophon { grid-template-columns: 1fr; } }
+
+  .bottom-rule {
+    background: var(--mulberry);
+    color: var(--cream);
+    padding: 14px var(--gutter);
+    text-align: center;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.32em;
+    text-transform: lowercase;
+    display: flex; justify-content: center; align-items: center;
+    gap: 28px; flex-wrap: wrap;
+  }
+  .bottom-rule .ch { color: var(--chartreuse); }
+  .bottom-rule .pk { color: var(--hot-pink); }
+
+  /* REVEAL */
+  .reveal {
+    opacity: 0;
+    transform: translateY(36px);
+    transition: opacity 0.95s cubic-bezier(.2,.6,.1,1), transform 0.95s cubic-bezier(.2,.6,.1,1);
+  }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+  .reveal.r2 { transform: translateY(-36px); }
+  .reveal.r2.in { transform: translateY(0); }
+  .reveal.scale { transform: scale(0.92); }
+  .reveal.scale.in { transform: scale(1); }
+  .d1 { transition-delay: 0.07s; }
+  .d2 { transition-delay: 0.14s; }
+  .d3 { transition-delay: 0.21s; }
+  .d4 { transition-delay: 0.28s; }
+  .d5 { transition-delay: 0.35s; }
+  .d6 { transition-delay: 0.42s; }
+  .d7 { transition-delay: 0.49s; }
+
+  /* stagger reveal for card grids */
+  .cards .card { opacity: 0; transform: translateY(40px) rotate(-1deg); transition: opacity 0.7s, transform 0.7s; }
+  .cards.in .card { opacity: 1; transform: translateY(0) rotate(0); }
+  .cards.in .card:nth-child(1)  { transition-delay: 0.05s; }
+  .cards.in .card:nth-child(2)  { transition-delay: 0.10s; }
+  .cards.in .card:nth-child(3)  { transition-delay: 0.15s; }
+  .cards.in .card:nth-child(4)  { transition-delay: 0.20s; }
+  .cards.in .card:nth-child(5)  { transition-delay: 0.25s; }
+  .cards.in .card:nth-child(6)  { transition-delay: 0.30s; }
+  .cards.in .card:nth-child(7)  { transition-delay: 0.35s; }
+  .cards.in .card:nth-child(8)  { transition-delay: 0.40s; }
+  .cards.in .card:nth-child(9)  { transition-delay: 0.45s; }
+  .cards.in .card:nth-child(10) { transition-delay: 0.50s; }
+
+  @media print {
+    body::before, .cursor, .trail { display: none; }
+    body { cursor: auto; background: #fff; }
+    .marquees, .flow, .manifesto, .tier { background: #fff; color: #000; }
+    .tier .mega { opacity: 0.1; }
+  }
+
+  /* ═════════════ AUDIO · clickable titles ═════════════ */
+  [data-audio] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(217,242,92,0.25);
+    cursor: pointer;
+
+    cursor: pointer;
+    transition: color 0.2s, text-shadow 0.25s, transform 0.25s;
+    position: relative;
+  }
+  [data-audio]::before {
+    content: "▷";
+    display: inline-block;
+    margin-right: 0.32em;
+    font-family: var(--font-mono);
+    font-size: 0.55em;
+    color: var(--hot-pink);
+    transform: translateY(-0.15em);
+    opacity: 0.55;
+    transition: transform 0.25s, opacity 0.25s;
+  }
+  [data-audio]:hover::before { opacity: 1; transform: translateY(-0.15em) scale(1.3); }
+  [data-audio].playing::before {
+    content: "▶";
+    color: var(--chartreuse);
+    opacity: 1;
+    animation: pulse-icon 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse-icon { 50% { transform: translateY(-0.15em) scale(1.18); } }
+
+  /* card titles: subtler */
+  .card .name[data-audio]::before,
+  .card .name-sub[data-audio]::before {
+    font-size: 0.5em;
+    color: var(--hot-pink);
+    margin-right: 0.4em;
+  }
+  .card .name[data-audio].playing {
+    color: var(--hot-pink);
+  }
+  .card .name[data-audio].playing::before {
+    color: var(--hot-pink);
+  }
+
+  /* ══ SUBTITLE audio · unique treatment ═════════════
+     Different voice (Andrew Neural · male), different content (poetic ethos
+     line per module), different visual cue: ◌ idle → ◉ playing, chartreuse */
+  [data-audio$="_sub"]::before {
+    content: "◌";
+    color: var(--chartreuse) !important;
+    text-shadow: 0 0 6px rgba(217,242,92,0.0);
+    transition: text-shadow 0.3s, color 0.2s, transform 0.25s, opacity 0.25s;
+  }
+  [data-audio$="_sub"]:hover::before {
+    text-shadow: 0 0 10px rgba(217,242,92,0.7);
+  }
+  [data-audio$="_sub"].playing::before {
+    content: "◉";
+    color: var(--chartreuse) !important;
+    text-shadow: 0 0 12px rgba(217,242,92,0.9);
+    animation: ring-pulse 1.3s ease-in-out infinite;
+  }
+  [data-audio$="_sub"].playing {
+    color: var(--chartreuse) !important;
+    font-style: italic;
+  }
+  @keyframes ring-pulse {
+    0%, 100% { transform: translateY(-0.15em) scale(1); text-shadow: 0 0 6px rgba(217,242,92,0.6); }
+    50%      { transform: translateY(-0.15em) scale(1.25); text-shadow: 0 0 16px rgba(217,242,92,1); }
+  }
+
+  /* now-playing chip shifts character when a subtitle is on */
+  .now-playing.is-sub {
+    border-color: var(--chartreuse);
+    background: var(--mulberry);
+  }
+  .now-playing.is-sub .bars span { background: var(--chartreuse); }
+  .now-playing.is-sub .label b::before {
+    content: "♪ ethos";
+  }
+  .now-playing .label b::before {
+    content: "▶ now playing";
+  }
+  .now-playing .label b { font-size: 0; }
+  .now-playing .label b::before { font-size: 10px; }
+
+  /* dark/light section overrides */
+  .tier.t1 [data-audio]::before,
+  .flow [data-audio]::before { color: var(--chartreuse); }
+  .tier.t1 [data-audio].playing::before,
+  .flow [data-audio].playing::before { color: var(--chartreuse); }
+  .manifesto [data-audio]::before { color: var(--hot-pink); }
+
+  /* ═════════════ AUDIO toggle button (top strip) ═════════════ */
+  .audio-btn {
+    background: transparent;
+    color: var(--cream);
+    border: 1px solid var(--cream);
+    padding: 8px 14px;
+    min-height: 36px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: lowercase;
+    cursor: pointer;
+    transition: all 0.22s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  @media (max-width: 720px) {
+    .audio-btn { padding: 10px 16px; font-size: 13px; min-height: 44px; }
+  }
+  .audio-btn:hover { background: var(--chartreuse); color: var(--ink); border-color: var(--chartreuse); }
+  .audio-btn.on { background: var(--chartreuse); color: var(--ink); border-color: var(--chartreuse); }
+  .audio-btn .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+  .audio-btn.on .dot { background: var(--hot-pink); animation: blink 1.1s steps(2) infinite; }
+
+  /* ═════════════ NOW PLAYING chip ═════════════ */
+  .now-playing {
+    position: fixed;
+    bottom: 24px; left: 24px;
+    z-index: 300;
+    background: var(--ink);
+    color: var(--chartreuse);
+    padding: 12px 18px 12px 14px;
+    display: flex; align-items: center;
+    gap: 12px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: lowercase;
+    border: 1px solid var(--chartreuse);
+    max-width: 380px;
+    transform: translateX(calc(-100% - 28px));
+    transition: transform 0.45s cubic-bezier(.2,.6,.1,1);
+    pointer-events: auto;
+  }
+  .now-playing.on { transform: translateX(0); }
+  .now-playing .bars {
+    display: inline-flex; align-items: end; gap: 2px;
+    height: 14px;
+    flex-shrink: 0;
+  }
+  .now-playing .bars span {
+    width: 3px; background: var(--chartreuse);
+    animation: eq 0.9s ease-in-out infinite;
+    transform-origin: bottom;
+  }
+  .now-playing .bars span:nth-child(1) { height: 60%; animation-delay: 0s; }
+  .now-playing .bars span:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+  .now-playing .bars span:nth-child(3) { height: 70%; animation-delay: 0.4s; }
+  .now-playing .bars span:nth-child(4) { height: 90%; animation-delay: 0.1s; }
+  @keyframes eq {
+    0%, 100% { transform: scaleY(0.4); }
+    50%      { transform: scaleY(1); }
+  }
+  .now-playing .label {
+    flex: 1;
+    color: var(--cream);
+    line-height: 1.3;
+  }
+  .now-playing .label b {
+    display: block;
+    color: var(--chartreuse);
+    font-weight: 400;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .now-playing .close {
+    background: transparent;
+    border: none;
+    color: var(--hot-pink);
+    cursor: pointer;
+    font-family: var(--font-mono);
+    font-size: 16px;
+    padding: 0 2px;
+    line-height: 1;
+  }
+  @media (max-width: 560px) {
+    .now-playing { left: 12px; right: 12px; bottom: 12px; }
+  }
+
+  
+  
+  /* ═══════════════════ V2 AUDIO OVERLAY · TAP TO ENABLE ═══════════════════ */
+  .v2-audio-gate {
+    position: fixed; inset: 0;
+    background: rgba(10,10,10,0.92);
+    color: var(--cream);
+    z-index: 9000;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    padding: 32px;
+    text-align: center;
+  }
+  .v2-audio-gate.dismissed { display: none; }
+  .v2-audio-gate .gate-icon {
+    width: 120px; height: 120px;
+    border-radius: 50%;
+    background: var(--chartreuse);
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 60px;
+    margin-bottom: 28px;
+    animation: gatepulse 1.6s ease-in-out infinite;
+    box-shadow: 0 0 0 20px rgba(217,242,92,0.15), 0 0 0 40px rgba(217,242,92,0.06);
+  }
+  @keyframes gatepulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+  .v2-audio-gate .gate-title {
+    font-family: var(--font-display); font-style: italic;
+    font-variation-settings: "opsz" 96, "wght" 500;
+    font-size: clamp(32px, 6vw, 56px);
+    line-height: 1.05; color: var(--cream);
+    max-width: 720px;
+  }
+  .v2-audio-gate .gate-sub {
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.2em; text-transform: lowercase;
+    color: var(--chartreuse);
+    margin-top: 18px;
+  }
+  .v2-audio-gate .gate-cta {
+    margin-top: 32px;
+    padding: 16px 36px;
+    background: var(--chartreuse); color: var(--ink);
+    border: none;
+    border-radius: 36px;
+    font-family: var(--font-mono); font-weight: 800;
+    font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  /* visible flash feedback when ANY clickable element is tapped */
+  [data-audio].v2-flash {
+    background-color: var(--hot-pink) !important;
+    color: var(--cream) !important;
+    transition: background-color 0.05s, color 0.05s;
+  }
+
+  /* big visible audio status — drops down from the top */
+  .v2-status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -200%);
+    max-width: 94vw;
+    padding: 16px 24px;
+    background: var(--mulberry);
+    color: var(--cream);
+    border: 2px solid var(--chartreuse);
+    border-radius: 32px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.08em;
+    z-index: 8000;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    text-align: center;
+  }
+  .v2-status.show { transform: translate(-50%, 0); }
+  .v2-status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
+
+  /* ═══════════════════════ FLOATING AUDIO + STATUS ═══════════════════════ */
+  .audio-fab {
+    position: fixed;
+    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+    left: 18px;
+    min-width: 64px; height: 64px; padding: 0 18px;
+    border-radius: 32px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--cream);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    cursor: pointer;
+    z-index: 1500;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: lowercase;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: transform 0.12s ease, background 0.2s ease, color 0.2s ease;
+  }
+  .audio-fab:active { transform: scale(0.93); }
+  .audio-fab.on {
+    background: var(--chartreuse);
+    color: var(--ink);
+    border-color: var(--chartreuse);
+    box-shadow: 0 12px 32px rgba(217,242,92,0.5);
+  }
+  .audio-fab .icon { font-size: 18px; line-height: 1; }
+  .audio-fab.on .icon::after { content: "🔊"; }
+  .audio-fab:not(.on) .icon::after { content: "🔇"; }
+
+  /* status banner — visible feedback */
+  .audio-status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -120%);
+    max-width: 92vw;
+    padding: 12px 20px;
+    background: var(--ink);
+    color: var(--chartreuse);
+    border: 1.5px solid var(--chartreuse);
+    border-radius: 28px;
+    font-family: var(--font-mono); font-size: 12px;
+    letter-spacing: 0.06em;
+    z-index: 1600;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.55);
+    transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.22s;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audio-status.show { transform: translate(-50%, 0); opacity: 1; }
+  .audio-status.error { color: var(--hot-pink); border-color: var(--hot-pink); }
+
+  /* ═══════════════════════ MOBILE NAV ═══════════════════════ */
+  .nav-fab {
+    position: fixed;
+    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 20px));
+    right: 18px;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    background: var(--mulberry);
+    color: var(--chartreuse);
+    border: 2px solid var(--chartreuse);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45), 0 0 0 6px rgba(217,242,92,0.15);
+    cursor: pointer;
+    z-index: 1500;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.18s ease;
+  }
+  .nav-fab:active { transform: scale(0.93); }
+  .nav-fab svg { width: 26px; height: 26px; }
+  .nav-fab[aria-expanded="true"] { background: var(--chartreuse); color: var(--mulberry); }
+
+  .nav-top {
+    position: fixed;
+    bottom: max(90px, calc(env(safe-area-inset-bottom, 0px) + 90px));
+    right: 18px;
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    background: var(--cream);
+    color: var(--mulberry);
+    border: 2px solid var(--mulberry);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    cursor: pointer;
+    z-index: 1499;
+    display: none; align-items: center; justify-content: center;
+    font-family: var(--font-mono); font-size: 18px; font-weight: 700;
+    transition: transform 0.18s ease, opacity 0.18s ease;
+  }
+  .nav-top.show { display: flex; }
+  .nav-top:active { transform: scale(0.93); }
+
+  .nav-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,10,10,0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 1400;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.24s ease;
+  }
+  .nav-overlay.open { opacity: 1; pointer-events: auto; }
+
+  .nav-drawer {
+    position: fixed;
+    top: 0; right: 0; bottom: 0;
+    width: min(86vw, 380px);
+    background: var(--mulberry);
+    color: var(--cream);
+    z-index: 1450;
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.4,0,0.2,1);
+    display: flex; flex-direction: column;
+    box-shadow: -10px 0 60px rgba(0,0,0,0.5);
+    padding-top: max(20px, env(safe-area-inset-top, 20px));
+  }
+  .nav-drawer.open { transform: translateX(0); }
+  .nav-drawer-head {
+    padding: 20px 24px 14px;
+    border-bottom: 1px solid rgba(245,239,224,0.15);
+    display: flex; justify-content: space-between; align-items: flex-end;
+  }
+  .nav-drawer-head .kicker {
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.25em;
+    color: var(--chartreuse); text-transform: lowercase; opacity: 0.85;
+  }
+  .nav-drawer-head .title {
+    font-family: var(--font-display); font-style: italic; font-size: 22px;
+    font-variation-settings: "opsz" 96, "wght" 500; margin-top: 6px; color: var(--cream);
+  }
+  .nav-drawer-close {
+    background: transparent; border: 1px solid rgba(245,239,224,0.3);
+    color: var(--cream); width: 38px; height: 38px;
+    border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; line-height: 1; padding: 0;
+  }
+  .nav-drawer-list {
+    flex: 1; overflow-y: auto; padding: 10px 0;
+    padding-bottom: max(20px, env(safe-area-inset-bottom, 20px));
+  }
+  .nav-drawer-list a {
+    display: block; padding: 14px 24px;
+    color: var(--cream); text-decoration: none;
+    border-left: 3px solid transparent;
+    font-family: var(--font-body); font-size: 16px;
+    transition: background 0.14s ease, border-left-color 0.14s ease;
+  }
+  .nav-drawer-list a .num {
+    display: block; font-family: var(--font-mono); font-size: 10px;
+    letter-spacing: 0.2em; color: var(--chartreuse); margin-bottom: 4px;
+    text-transform: lowercase;
+  }
+  .nav-drawer-list a .name {
+    font-family: var(--font-display); font-style: italic; font-size: 18px;
+    font-variation-settings: "opsz" 96, "wght" 500;
+  }
+  .nav-drawer-list a:hover, .nav-drawer-list a:focus {
+    background: rgba(217,242,92,0.08);
+    border-left-color: var(--chartreuse);
+  }
+  .nav-drawer-list a.current {
+    background: rgba(217,242,92,0.15);
+    border-left-color: var(--chartreuse);
+  }
+
+  </style>
+</head>
+
+<body id="top">
+<!-- v2 · tap-to-enable audio gate -->
+<div class="v2-audio-gate" id="v2Gate" role="button" tabindex="0" aria-label="Tap to enable audio">
+  <div class="gate-icon">🔊</div>
+  <div class="gate-title">Tap to enable audio narration.</div>
+  <div class="gate-sub">— required by ios safari · one tap unlocks all titles —</div>
+  <button class="gate-cta" type="button">Enable Audio</button>
+</div>
+
+<!-- v2 · big visible status banner -->
+<div class="v2-status" id="v2Status" role="status" aria-live="polite"></div>
+
+
+<!-- floating audio toggle + status banner -->
+<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio">
+  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
+</button>
+<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
+
+
+<div class="cursor" id="cur"></div>
+<div class="trail" id="trail-1"></div>
+<div class="trail" id="trail-2"></div>
+<div class="trail" id="trail-3"></div>
+
+<!-- floating decorative type specimens -->
+<div class="floating-spec" style="top: 22vh; right: 4vw; font-size: 240px; transform: rotate(8deg);">∞</div>
+<div class="floating-spec" style="bottom: 28vh; left: -2vw; font-size: 360px; transform: rotate(-6deg); opacity: 0.04;">Q</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TOP STRIP
+═════════════════════════════════════════════════════════════════ -->
+<div class="top-strip">
+  <span><span class="ch blink">●</span> validation · the comprehensive defensive brief</span>
+  <span class="cy">ayass bioscience · bureau of causal validation</span>
+  <span style="display: inline-flex; align-items: center; gap: 14px;">
+    <span>set in <em>bodoni moda</em> · unbounded · lora</span>
+    <button class="audio-btn" id="audioBtn" type="button" aria-pressed="false" title="Toggle audio narration">
+      <span class="dot"></span><span id="audioBtnLabel">audio · off</span>
+    </button>
+  </span>
+</div>
+
+<audio id="player" preload="auto"></audio>
+
+<div class="now-playing" id="nowPlay" role="status" aria-live="polite">
+  <span class="bars"><span></span><span></span><span></span><span></span></span>
+  <span class="label"><b>now playing</b><span id="npLabel">—</span></span>
+  <button class="close" id="npClose" type="button" aria-label="Stop">×</button>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MULTI-LANE MARQUEE
+═════════════════════════════════════════════════════════════════ -->
+<div class="marquees">
+  <div class="marquee-lane l1">
+    <div class="track">
+      <span><span class="star">nine validation levels</span><span class="star">five canonical methods</span><span class="star">twenty-six tracked claims</span><span class="star">operational today</span><span class="star">defensible to scientists · defensible to investors</span></span>
+      <span aria-hidden="true"><span class="star">nine validation levels</span><span class="star">five canonical methods</span><span class="star">twenty-six tracked claims</span><span class="star">operational today</span><span class="star">defensible to scientists · defensible to investors</span></span>
+    </div>
+  </div>
+  <div class="marquee-lane l2">
+    <div class="track">
+      <span><span class="star">PC ◊ GRANGER ◊ MR ◊ DO-CALCULUS ◊ BRADFORD HILL</span><span class="star">FDA BQP · 21 CFR §809.40</span><span class="star">TEE · CMEK · CONFIDENTIAL AI</span><span class="star">SIGSTORE · SLSA L3+</span><span class="star">CRYPTOGRAPHIC KILL-SWITCH</span></span>
+      <span aria-hidden="true"><span class="star">PC ◊ GRANGER ◊ MR ◊ DO-CALCULUS ◊ BRADFORD HILL</span><span class="star">FDA BQP · 21 CFR §809.40</span><span class="star">TEE · CMEK · CONFIDENTIAL AI</span><span class="star">SIGSTORE · SLSA L3+</span><span class="star">CRYPTOGRAPHIC KILL-SWITCH</span></span>
+    </div>
+  </div>
+  <div class="marquee-lane l3">
+    <div class="track">
+      <span><span class="star">t1 · methods · 05</span><span class="star">t2 · implementation · 05</span><span class="star">t3 · posture · 06</span><span class="star">ccs · psi · outcome-truthfulness scoring</span><span class="star">canonical math · testable code · audited posture</span></span>
+      <span aria-hidden="true"><span class="star">t1 · methods · 05</span><span class="star">t2 · implementation · 05</span><span class="star">t3 · posture · 06</span><span class="star">ccs · psi · outcome-truthfulness scoring</span><span class="star">canonical math · testable code · audited posture</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COVER · MANDALA POSTER
+═════════════════════════════════════════════════════════════════ -->
+<header class="cover">
+  <div class="cover-inner">
+    <div class="cover-meta-row reveal">
+      <div><span class="ch">⧊</span> validation master · the defensive brief · v2</div>
+      <div class="right">edition mmxxvi · 31·05 · confidential / investor use</div>
+    </div>
+
+    <div>
+      <h1 class="cover-headline" data-audio="overview" data-audio-src="audio/overview.mp3" data-label="The validation defense · how BiRAGAS proves the claim">
+        <span class="line reveal">How</span>
+        <span class="line ital-thin reveal d1">BiRAGAS</span>
+        <span class="line reveal d2"><span class="splash">is</span> Validated</span>
+        <span class="line reveal d3"><span class="chunk">.</span></span>
+        <span class="vol reveal d4">— the defense for every claim · for scientists and investors —</span>
+      </h1>
+      <p class="cover-deck reveal d4">
+        The defensive brief for every BiRAGAS validation claim. Nine concurrent validation levels — defense in depth. Five canonical causal-inference methods — peer-reviewed for decades. Twenty-six individual claims tracked. Operational today. Verifiable quarterly.
+      </p>
+    </div>
+
+    <!-- MANDALA -->
+    <div class="mandala-wrap reveal scale d2">
+      <svg viewBox="-300 -300 600 600" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <path id="ring-outer" d="M 0,-260 A 260,260 0 1,1 -0.01,-260" fill="none"/>
+          <path id="ring-mid"   d="M 0,-180 A 180,180 0 1,1 -0.01,-180" fill="none"/>
+          <path id="ring-inner" d="M 0,-110 A 110,110 0 1,1 -0.01,-110" fill="none"/>
+        </defs>
+
+        <!-- outer pulse circle -->
+        <g class="mandala-pulse">
+          <circle r="285" fill="none" stroke="#3D0E40" stroke-width="0.6" stroke-dasharray="2 6"/>
+          <circle r="270" fill="none" stroke="#3D0E40" stroke-width="0.4"/>
+        </g>
+
+        <!-- OUTER RING (T2 - 10 modules) -->
+        <g class="mandala-ring">
+          <circle r="260" fill="none" stroke="#3D0E40" stroke-width="1"/>
+          <text font-family="Bodoni Moda" font-style="italic" font-size="18" fill="#3D0E40" letter-spacing="3">
+            <textPath href="#ring-outer" startOffset="0%">
+              T2 · DECONVOLUTION ◊ DEG ANALYSIS ◊ GENE PRIORITIZATION ◊ GSEA ENRICHMENT ◊ MULTI-OMICS ◊ PATHWAY ENRICHMENT ◊ SINGLE-CELL ◊ TEMPORAL BULK ◊ TEMPORAL GRANGER ◊ TOTAL RNA PIPELINE ◊
+            </textPath>
+          </text>
+        </g>
+
+        <!-- MID RING (T1 - 8 engines) -->
+        <g class="mandala-ring inner">
+          <circle r="180" fill="none" stroke="#FF3D7F" stroke-width="1.5"/>
+          <text font-family="Bodoni Moda" font-style="italic" font-weight="500" font-size="17" fill="#FF3D7F" letter-spacing="2">
+            <textPath href="#ring-mid" startOffset="0%">
+              T1 ◊ CAUSAL CALCULUS ◊ CAUSAL DAG BUILDER ◊ CAUSALITY ◊ CENTRALITY ◊ GWAS · MR ◊ PERTURBATION PATIENT ◊ PERTURBATION POPULATION ◊ SIGNOR ◊
+            </textPath>
+          </text>
+        </g>
+
+        <!-- INNER RING (T3 - 7 modules) -->
+        <g class="mandala-ring">
+          <circle r="110" fill="none" stroke="#00D4E1" stroke-width="1"/>
+          <text font-family="Major Mono Display" font-size="11" fill="#00D4E1" letter-spacing="2">
+            <textPath href="#ring-inner" startOffset="0%">
+              T3 ◊ COHORT ◊ PERTURB-SEQ ◊ SCREENING ◊ AMPLICON ◊ HARMONIZATION ◊ FASTQ ◊ PERTURBATION ◊
+            </textPath>
+          </text>
+        </g>
+
+        <!-- center -->
+        <g class="mandala-pulse">
+          <circle r="56" fill="#3D0E40"/>
+          <circle r="46" fill="none" stroke="#D9F25C" stroke-width="1.5"/>
+          <text x="0" y="-2" text-anchor="middle" font-family="Bodoni Moda" font-style="italic" font-size="22" fill="#D9F25C" font-weight="500">causion</text>
+          <text x="0" y="16" text-anchor="middle" font-family="Major Mono Display" font-size="8" fill="#D9F25C" letter-spacing="2">agent · 01</text>
+        </g>
+
+        <!-- compass marks -->
+        <g stroke="#0A0A0A" stroke-width="0.8">
+          <line x1="0" y1="-298" x2="0" y2="-285"/>
+          <line x1="0" y1="285" x2="0" y2="298"/>
+          <line x1="-298" y1="0" x2="-285" y2="0"/>
+          <line x1="285" y1="0" x2="298" y2="0"/>
+        </g>
+        <text x="0" y="-302" text-anchor="middle" font-family="Major Mono Display" font-size="9" fill="#0A0A0A" letter-spacing="3">N</text>
+        <text x="0" y="312" text-anchor="middle" font-family="Major Mono Display" font-size="9" fill="#0A0A0A" letter-spacing="3">S</text>
+        <text x="-312" y="3" text-anchor="middle" font-family="Major Mono Display" font-size="9" fill="#0A0A0A" letter-spacing="3">W</text>
+        <text x="312" y="3" text-anchor="middle" font-family="Major Mono Display" font-size="9" fill="#0A0A0A" letter-spacing="3">E</text>
+      </svg>
+    </div>
+  </div>
+</header>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     STATS BAND
+═════════════════════════════════════════════════════════════════ -->
+<section class="stats">
+  <div class="item reveal"><div class="k counter" data-target="9">0</div><div class="v">validation levels</div></div>
+  <div class="item reveal d1"><div class="k counter" data-target="5">0</div><div class="v">canonical methods</div></div>
+  <div class="item reveal d2"><div class="k counter" data-target="26">0</div><div class="v">tracked claims</div></div>
+  <div class="item reveal d3"><div class="k counter" data-target="8">0</div><div class="v">compliance frameworks</div></div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     CAUSION POSTER
+═════════════════════════════════════════════════════════════════ -->
+<section class="causion-poster">
+  <div class="eyebrow reveal">the foundation · canonical causal-inference math · peer-reviewed for decades</div>
+  <h2 class="reveal d1" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="The five canonical methods · the math is settled">Five <span class="acc">canonical</span> methods.</h2>
+  <p class="reveal d2 causion-body">
+    BiRAGAS does not invent new statistics. The 5-stage pipeline is built entirely from canonical methods that have been peer-reviewed and battle-tested for decades. The math is settled. The operationalization is the work.
+  </p>
+  <div class="causion-grid reveal d3">
+    <div class="cc-card"><div class="cc-num">01</div><div class="cc-name">PC Algorithm</div><div class="cc-sub">Spirtes & Glymour · 1991/2000</div></div>
+    <div class="cc-card"><div class="cc-num">02</div><div class="cc-name">Granger</div><div class="cc-sub">Granger · 1969 · Nobel 2003</div></div>
+    <div class="cc-card"><div class="cc-num">03</div><div class="cc-name">Mendelian Randomization</div><div class="cc-sub">Davey Smith & Ebrahim · 2003</div></div>
+    <div class="cc-card"><div class="cc-num">04</div><div class="cc-name">do-Calculus</div><div class="cc-sub">Pearl · 1995 · Turing 2011</div></div>
+    <div class="cc-card"><div class="cc-num">05</div><div class="cc-name">Bradford Hill</div><div class="cc-sub">Bradford Hill · 1965</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TIER 01 POSTER
+═════════════════════════════════════════════════════════════════ -->
+<section class="tier t1" id="t1">
+  <div class="mega">T·01</div>
+  <div class="tier-head">
+    <div>
+      <div class="label"><span class="badge">1</span> the math · five canonical citations</div>
+      <h2 data-audio="t1" data-audio-src="audio/t1.mp3" data-label="Tier 1 · The math is settled · the canonical citations">Beyond <span class="ital">correlation.</span></h2>
+      <p class="t-deck reveal d2">Each stage is independently validated by an established academic literature with thousands of citations. A reviewer who is sophisticated about causal inference recognises every name. The math is the canon.</p>
+    </div>
+  </div>
+  <div class="cards">
+    <article class="card reveal">
+      <div class="card-num">T1·01</div>
+      <div class="name" data-audio="pc_algorithm" data-audio-src="audio/pc_algorithm.mp3" data-label="PC Algorithm · structure discovery">PC Algorithm</div>
+      <div class="name-sub" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="Constraint-based causal-structure discovery from observational data">structure discovery · spirtes & glymour 1991/2000</div>
+    </article>
+    <article class="card reveal d1">
+      <div class="card-num">T1·02</div>
+      <div class="name" data-audio="granger" data-audio-src="audio/granger.mp3" data-label="Granger Causality · temporal inference">Granger Causality</div>
+      <div class="name-sub" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="Temporal causal inference · Nobel-prize-recognised foundation">temporal inference · granger 1969 · nobel 2003</div>
+    </article>
+    <article class="card reveal d2">
+      <div class="card-num">T1·03</div>
+      <div class="name" data-audio="mendelian_randomization" data-audio-src="audio/mendelian_randomization.mp3" data-label="Mendelian Randomization · genetic-instrument causal effect estimation">Mendelian Randomization</div>
+      <div class="name-sub" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="Gold standard in epidemiology · MR-Egger · MR-PRESSO · IVW">genetic instruments · davey smith & ebrahim 2003</div>
+    </article>
+    <article class="card reveal d3">
+      <div class="card-num">T1·04</div>
+      <div class="name" data-audio="do_calculus" data-audio-src="audio/do_calculus.mp3" data-label="do-Calculus · interventional probability">do-Calculus</div>
+      <div class="name-sub" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="Pearl's Turing-Award framework · P(Y | do(X))">interventional probability · pearl 1995 · turing 2011</div>
+    </article>
+    <article class="card reveal d4">
+      <div class="card-num">T1·05</div>
+      <div class="name" data-audio="bradford_hill" data-audio-src="audio/bradford_hill.mp3" data-label="Bradford Hill · epidemiological causal criteria">Bradford Hill</div>
+      <div class="name-sub" data-audio="methods" data-audio-src="audio/methods.mp3" data-label="The historical foundation of modern epidemiology">causal criteria · bradford hill 1965</div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TIER 02 POSTER
+═════════════════════════════════════════════════════════════════ -->
+<section class="tier t2" id="t2">
+  <div class="mega">T·02</div>
+  <div class="tier-head">
+    <div>
+      <div class="label"><span class="badge">2</span> the implementation · five testable layers</div>
+      <h2 data-audio="t2" data-audio-src="audio/t2.mp3" data-label="Tier 2 · the implementation · testable software validation">Tested <span class="ital">code</span>, not promises.</h2>
+      <p class="t-deck reveal d2">Canonical math is necessary but not sufficient. The implementation has to be correct. Five concurrent software-validation layers, every release.</p>
+    </div>
+  </div>
+  <div class="cards">
+    <article class="card reveal">
+      <div class="card-num">T2·01</div>
+      <div class="name" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Unit tests · ≥80% coverage on inference modules">Unit Tests</div>
+      <div class="name-sub" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Synthetic ground-truth + edge cases + boundary conditions">≥80% line coverage · synthetic · edge · boundary</div>
+    </article>
+    <article class="card reveal d1">
+      <div class="card-num">T2·02</div>
+      <div class="name" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Integration tests · WF-1..7 workflows on reference datasets">Integration Tests</div>
+      <div class="name-sub" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="End-to-end workflow validation · drift detection per release">end-to-end · drift detection · per-release</div>
+    </article>
+    <article class="card reveal d2">
+      <div class="card-num">T2·03</div>
+      <div class="name" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Benchmark suites vs published reference datasets">Benchmark Suites</div>
+      <div class="name-sub" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="ENCODE · GTEx · eQTLGen · Open Targets · DisGeNET · LINCS · DepMap · ClinVar">encode · gtex · eqtlgen · open targets · disgenet</div>
+    </article>
+    <article class="card reveal d3">
+      <div class="card-num">T2·04</div>
+      <div class="name" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Continuous integration · drift detection on every release">CI · Drift Detection</div>
+      <div class="name-sub" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Per-commit CI · failing tests block merge · regression alarms">per-commit · failing tests block merge</div>
+    </article>
+    <article class="card reveal d4">
+      <div class="card-num">T2·05</div>
+      <div class="name" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Code review · two-reviewer mandatory · biostatistics sign-off for inference changes">Code Review</div>
+      <div class="name-sub" data-audio="implementation" data-audio-src="audio/implementation.mp3" data-label="Two-reviewer policy · biostatistics-advisor sign-off">two-reviewer · biostatistics sign-off</div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     TIER 03 POSTER
+═════════════════════════════════════════════════════════════════ -->
+<section class="tier t3" id="t3">
+  <div class="mega">T·03</div>
+  <div class="tier-head">
+    <div>
+      <div class="label"><span class="badge">3</span> the posture · regulatory + reproducibility + confidential ai</div>
+      <h2 data-audio="t3" data-audio-src="audio/t3.mp3" data-label="Tier 3 · The posture · regulatory + reproducibility + confidential AI">Where the <span class="ital">posture</span> becomes proof.</h2>
+      <p class="t-deck reveal d2">Math and code are necessary. External-facing validation — regulatory engagement, cryptographic reproducibility, audit-grade compliance — is what pharma and FDA actually accept.</p>
+    </div>
+  </div>
+  <div class="cards">
+    <article class="card reveal">
+      <div class="card-num">T3·01</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="FDA Biomarker Qualification Program · active pre-submission">FDA BQP</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="Active pre-submission discussions · FSGS/IgA beachhead">pre-submission · fsga/iga beachhead</div>
+    </article>
+    <article class="card reveal d1">
+      <div class="card-num">T3·02</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="21 CFR §809.40 Companion Diagnostic co-approval pathway">CDx · 21 CFR §809.40</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="IVD partners identified · 3-7% net royalty · 12-15 yr patent life">stream v royalty · ivd partnerships</div>
+    </article>
+    <article class="card reveal d2">
+      <div class="card-num">T3·03</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="Breakthrough Device Designation · accelerated review">Breakthrough Device</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="Top-impact candidates · accelerated FDA review timeline">accelerated review · top candidates</div>
+    </article>
+    <article class="card reveal d3">
+      <div class="card-num">T3·04</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="21 CFR Part 11 · electronic records + electronic signatures · operational today">21 CFR Part 11</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="TEE · immutable audit log · Object Lock immutability · operational">e-records · audit trail · object lock</div>
+    </article>
+    <article class="card reveal d4">
+      <div class="card-num">T3·05</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="TEE Remote Attestation · cryptographic proof of code identity">TEE Attestation</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="Customer KMS refuses key release unless code-hash matches approval">cryptographic proof · cmk-gated</div>
+    </article>
+    <article class="card reveal d5">
+      <div class="card-num">T3·06</div>
+      <div class="name" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="CMEK kill-switch · cryptographic deletion in one operation">CMEK Kill-Switch</div>
+      <div class="name-sub" data-audio="posture" data-audio-src="audio/posture.mp3" data-label="Customer revokes the CMK grant · all data unreadable forever · GDPR right-to-erasure">customer-revoked · cryptographic deletion</div>
+    </article>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     FLOW POSTER · animated path
+═════════════════════════════════════════════════════════════════ -->
+<section class="flow" id="flow">
+  <div class="eyebrow reveal">§06 · the 12-month roadmap · committed deliverables</div>
+  <h2 class="reveal d1" data-audio="roadmap" data-audio-src="audio/roadmap.mp3" data-label="The 12-month roadmap · committed deliverables · verifiable quarterly"><span class="acc">12 months</span> · committed · verifiable.</h2>
+  <p class="reveal d2 flow-deck">Three quarters of named, dated, single-accountable-person milestones. Each verifiable. Each tied to a validation level.</p>
+  <div class="flow-steps reveal d3">
+    <div class="step"><div class="step-num">Q3 · 2026</div><div class="step-name">Pilot anchor + benchmark</div><div class="step-sub">Top-3 pharma anchor candidates engaged · first pilot opened · Causaly head-to-head benchmark scoped · methods paper draft locked.</div></div>
+    <div class="arr">→</div>
+    <div class="step"><div class="step-num">Q4 · 2026</div><div class="step-name">Paper submission + SOC 2</div><div class="step-sub">Methods paper submitted to Nature Methods / Cell Systems · SOC 2 Type II audit calendar · first pilot 90-day deliverable produced · co-authored case study.</div></div>
+    <div class="arr">→</div>
+    <div class="step"><div class="step-num">Q1 · 2027</div><div class="step-name">Reference customer + BQP</div><div class="step-sub">First pilot conversion to paid contract · named-reference rights granted · FDA BQP submission accepted for review · second pilot opened in warm-intro economics.</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     MANIFESTO POSTER
+═════════════════════════════════════════════════════════════════ -->
+<section class="manifesto">
+  <div class="small reveal">end of brief · the defensive thesis</div>
+  <h2 class="reveal d1" data-audio="thesis" data-audio-src="audio/thesis.mp3" data-label="The defensive thesis · why the validation holds">We're not extracting<br>causal <span class="ital">language.</span></h2>
+  <h2 class="next reveal d2" data-audio="thesis" data-audio-src="audio/thesis.mp3" data-label="The defensive thesis · why the validation holds">We're building the<br>causal <span class="acc">inference</span>.</h2>
+  <h2 class="reveal d3" style="font-style: italic; font-size: clamp(28px, 4.5vw, 78px);" data-audio="thesis" data-audio-src="audio/thesis.mp3" data-label="Same word · radically different mathematical objects">Same word · radically different<br>mathematical objects.</h2>
+  <p class="reveal d4 manifesto-deck">PC algorithm. Granger causality. Mendelian randomization. do-calculus. Bradford Hill criteria. CCS scoring on outcome truthfulness. Operational today. Defensible to scientists. Defensible to investors.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
+     COLOPHON
+═════════════════════════════════════════════════════════════════ -->
+<footer class="colophon">
+  <div>
+    <h4>colophon.</h4>
+    Set in <a href="https://fonts.google.com/specimen/Bodoni+Moda" target="_blank" rel="noopener">Bodoni Moda</a> (display + italic, variable opsz 6–96, weight 400–900), <a href="https://fonts.google.com/specimen/Unbounded" target="_blank" rel="noopener">Unbounded</a> (chunky display), <a href="https://fonts.google.com/specimen/Lora" target="_blank" rel="noopener">Lora</a> (body), and <a href="https://fonts.google.com/specimen/Major+Mono+Display" target="_blank" rel="noopener">Major Mono Display</a> (ornaments). Mandala drawn in inline SVG with textPath circles. Paper grain: SVG fractal noise, multiplied at 28%.
+  </div>
+  <div>
+    <h4>companion.</h4>
+    <a href="https://mayasss-gif.github.io/BiRAGAS-Investor-Pitch-Guide-v2/" target="_blank" rel="noopener">Investor Pitch Guide v2</a><br>
+    <a href="https://mayasss-gif.github.io/BiRAGAS-Investors-Technical-Playbook/" target="_blank" rel="noopener">Technical Playbook (standard)</a><br>
+    <a href="https://mayasss-gif.github.io/BiRAGAS-Investors-Elevator-Pitch/" target="_blank" rel="noopener">Elevator Pitch · Q&amp;A</a><br>
+    <a href="https://mayasss-gif.github.io/BiRAGAS-Editorial-Issue-01/" target="_blank" rel="noopener">Editorial Issue 01 (maximalist)</a>
+  </div>
+  <div>
+    <h4>address.</h4>
+    ayass bioscience, l.l.c.<br>
+    frisco, texas · united states<br>
+    confidential · investor use only.
+  </div>
+</footer>
+
+<div class="bottom-rule">
+  <span><span class="ch">⧊</span> birasys</span>
+  <span class="pk">validation master · v2</span>
+  <span>defensive brief · mmxxvi</span>
+  <span class="ch">⧊ ◊ ⧊</span>
+</div>
+
+<script>
+  // ── cursor + trail ──
+  const cur = document.getElementById("cur");
+  const trails = [document.getElementById("trail-1"), document.getElementById("trail-2"), document.getElementById("trail-3")];
+  let mx = window.innerWidth/2, my = window.innerHeight/2;
+  const lag = [{x: mx, y: my}, {x: mx, y: my}, {x: mx, y: my}];
+  document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
+  function tick() {
+    cur.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    [0.18, 0.10, 0.05].forEach((k, i) => {
+      lag[i].x += (mx - lag[i].x) * k;
+      lag[i].y += (my - lag[i].y) * k;
+      trails[i].style.transform = `translate(${lag[i].x}px, ${lag[i].y}px) translate(-50%, -50%)`;
+      trails[i].style.opacity = 0.4 - i * 0.12;
+    });
+    requestAnimationFrame(tick);
+  }
+  tick();
+
+  document.querySelectorAll("a, button, .card, .ask-bar, .top-strip, .marquee-lane").forEach(el => {
+    el.addEventListener("mouseenter", () => { cur.style.width = "56px"; cur.style.height = "56px"; });
+    el.addEventListener("mouseleave", () => { cur.style.width = "28px"; cur.style.height = "28px"; });
+  });
+
+  // dark cursor over chartreuse sections
+  const ioCursor = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) cur.classList.add("dark");
+      else cur.classList.remove("dark");
+    });
+  }, { rootMargin: "-40% 0px -40% 0px", threshold: 0 });
+  document.querySelectorAll(".tier.t2, .manifesto").forEach(el => ioCursor.observe(el));
+
+  // ── reveals ──
+  const io = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add("in"); });
+  }, { rootMargin: "-7% 0px", threshold: 0.04 });
+  document.querySelectorAll(".reveal, .cards").forEach(el => io.observe(el));
+  window.addEventListener("load", () => {
+    document.querySelectorAll(".cover .reveal").forEach(el => el.classList.add("in"));
+  });
+
+  // ── stat counters ──
+  const countersIO = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll(".counter").forEach(c => {
+          const target = parseInt(c.dataset.target, 10);
+          const dur = 1400;
+          const start = performance.now();
+          (function step(t) {
+            const p = Math.min(1, (t - start) / dur);
+            const v = Math.round(target * (1 - Math.pow(1 - p, 3)));
+            c.textContent = String(v).padStart(2, "0");
+            if (p < 1) requestAnimationFrame(step);
+          })(start);
+        });
+        countersIO.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.4 });
+  document.querySelectorAll(".stats").forEach(el => countersIO.observe(el));
+
+  // ── ask-bar typer rotation ──
+  const typer = document.getElementById("typer");
+  const prompts = [
+    "Find DEGs between healthy and diseased samples.",
+    "Run a temporal Granger analysis with this gene set.",
+    "Build a causal DAG from these pathway hits.",
+    "Validate this target with Mendelian randomization.",
+    "Perturb FLT3 in silico across the AML cohort.",
+    "Map directed causal edges for these genes."
+  ];
+  let pIdx = 0, cIdx = 0, deleting = false;
+  function typeStep() {
+    const cur = prompts[pIdx];
+    if (!deleting) {
+      cIdx++;
+      typer.textContent = cur.slice(0, cIdx);
+      if (cIdx >= cur.length) { deleting = true; setTimeout(typeStep, 2200); return; }
+    } else {
+      cIdx--;
+      typer.textContent = cur.slice(0, cIdx);
+      if (cIdx <= 0) { deleting = false; pIdx = (pIdx + 1) % prompts.length; }
+    }
+    setTimeout(typeStep, deleting ? 30 : 55);
+  }
+  typeStep();
+
+  // ════════════════════════════════════════════════════════════════════════════
+  //   V2 AUDIO · FRESH IMPLEMENTATION
+  //   — Per-element click handlers (no document delegation)
+  //   — Tap-to-enable gate primes iOS Safari on first user gesture
+  //   — Visible feedback on every interaction (flash + status banner)
+  //   — Single audio element, fully reset (src + load) before each play
+  // ════════════════════════════════════════════════════════════════════════════
+  const player    = document.getElementById("player");
+  const audioBtn  = document.getElementById("audioBtn");
+  const audioBtnLbl = document.getElementById("audioBtnLabel");
+  const audioFab  = document.getElementById("audioFab");
+  const audioFabLbl = document.getElementById("audioFabLabel");
+  const nowPlay   = document.getElementById("nowPlay");
+  const npLabel   = document.getElementById("npLabel");
+  const npClose   = document.getElementById("npClose");
+  const v2Gate    = document.getElementById("v2Gate");
+  const v2Status  = document.getElementById("v2Status");
+  let audioOn = false;
+  let audioReady = false;     // true after the user has dismissed the gate (= iOS primed)
+  let activeKey = null;
+  let statusTimer = null;
+
+  function showStatus(msg, isError) {
+    if (!v2Status) return;
+    v2Status.textContent = msg;
+    v2Status.classList.toggle("error", !!isError);
+    v2Status.classList.add("show");
+    clearTimeout(statusTimer);
+    statusTimer = setTimeout(() => v2Status.classList.remove("show"), isError ? 5000 : 2400);
+  }
+
+  function setBtnState() {
+    if (audioBtn)  { audioBtn.classList.toggle("on", audioOn); audioBtn.setAttribute("aria-pressed", audioOn); }
+    if (audioBtnLbl) audioBtnLbl.textContent = audioOn ? "audio · on" : "audio · off";
+    if (audioFab)  { audioFab.classList.toggle("on", audioOn); audioFab.setAttribute("aria-pressed", audioOn); }
+    if (audioFabLbl) audioFabLbl.textContent = audioOn ? "audio · on" : "audio · off";
+  }
+
+  function paintActive() {
+    document.querySelectorAll("[data-audio]").forEach(el => {
+      el.classList.toggle("playing", activeKey && el.dataset.audio === activeKey);
+    });
+  }
+
+  function flashElement(el) {
+    el.classList.add("v2-flash");
+    setTimeout(() => el.classList.remove("v2-flash"), 220);
+  }
+
+  function stopAudio() {
+    try { player.pause(); } catch(_) {}
+    activeKey = null;
+    nowPlay.classList.remove("on", "is-sub");
+    paintActive();
+  }
+
+  // ── Play handler · CALLED DIRECTLY ON EACH ELEMENT'S CLICK · INSIDE GESTURE ──
+  function playFor(el) {
+    const key = el.dataset.audio;
+    const src = el.dataset.audioSrc;
+    const label = el.dataset.label || key;
+
+    flashElement(el);
+
+    if (activeKey === key && !player.paused) {
+      stopAudio();
+      showStatus("stopped");
+      return;
+    }
+    if (!audioOn) { audioOn = true; setBtnState(); }
+    showStatus("loading · " + (label.length > 50 ? label.slice(0, 50) + "…" : label));
+
+    // CRITICAL · reset element fully before each new play to avoid iOS
+    // AbortError ('the request was aborted by a new load request').
+    try { player.pause(); } catch(_) {}
+    player.removeAttribute("src");
+    try { player.load(); } catch(_) {}
+    player.src = src;
+    try { player.load(); } catch(_) {}
+
+    const p = player.play();
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        activeKey = key;
+        npLabel.textContent = label;
+        nowPlay.classList.add("on");
+        nowPlay.classList.toggle("is-sub", key.endsWith("_sub"));
+        paintActive();
+        showStatus("▶ " + (label.length > 50 ? label.slice(0, 50) + "…" : label));
+      }).catch(err => {
+        const name = (err && err.name) || "Error";
+        const msg  = (err && err.message) || String(err);
+        activeKey = null;
+        nowPlay.classList.remove("on", "is-sub");
+        paintActive();
+        // Show the SPECIFIC error name so the user can report it
+        showStatus("⚠ " + name + " · tap the audio gate again", true);
+        console.error("[v2 audio] play failed:", err, "src:", src);
+      });
+    }
+  }
+
+  function toggleAudio(e) {
+    if (e) e.stopPropagation();
+    audioOn = !audioOn;
+    setBtnState();
+    showStatus(audioOn ? "audio · on" : "audio · off");
+    if (!audioOn) stopAudio();
+  }
+  if (audioBtn) audioBtn.addEventListener("click", toggleAudio);
+  if (audioFab) audioFab.addEventListener("click", toggleAudio);
+
+  if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
+  player.addEventListener("ended", () => {
+    activeKey = null;
+    nowPlay.classList.remove("on", "is-sub");
+    paintActive();
+    showStatus("ended");
+  });
+  player.addEventListener("error", () => {
+    const err = player.error;
+    const codes = { 1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED" };
+    const code = err ? (codes[err.code] || ("CODE_" + err.code)) : "UNKNOWN";
+    showStatus("⚠ audio · " + code, true);
+    console.error("[v2 audio] element error:", err);
+  });
+
+  // ── Attach DIRECT per-element click handlers ──
+  // (instead of a document-level delegate — sometimes iOS gesture context
+  //  is more reliable with direct listeners)
+  function wireAudioElements() {
+    const els = document.querySelectorAll("[data-audio]");
+    els.forEach(el => {
+      if (el._v2Wired) return;
+      el._v2Wired = true;
+      el.style.cursor = "pointer";
+      el.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        playFor(el);
+      });
+    });
+    console.log("[v2 audio] wired", els.length, "clickable elements");
+  }
+  wireAudioElements();
+
+  // ── The gate · tap to enable + prime iOS Safari audio context ──
+  function dismissGate() {
+    // FIRST · prime the audio element inside the gesture window
+    audioReady = true;
+    audioOn = true;
+    setBtnState();
+    showStatus("audio enabled · tap any title");
+
+    // Play a silent blip to prime iOS (must be inside the gesture handler)
+    try {
+      player.src = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAAEgABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFj/////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQAAAAAAAAABIBzybLHAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
+      player.load();
+      const p = player.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          player.pause();
+          v2Gate.classList.add("dismissed");
+        }).catch(err => {
+          // Even if priming fails, dismiss the gate — user can still try
+          showStatus("⚠ prime failed: " + (err.name || err.message), true);
+          v2Gate.classList.add("dismissed");
+        });
+      } else {
+        v2Gate.classList.add("dismissed");
+      }
+    } catch(err) {
+      showStatus("⚠ " + err.message, true);
+      v2Gate.classList.add("dismissed");
+    }
+  }
+
+  v2Gate.addEventListener("click", dismissGate);
+  v2Gate.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dismissGate(); }
+  });
+
+  // ── variable-font weight tied to scroll ──
+  const headlineLines = document.querySelectorAll(".cover-headline .line, .causion-poster h2, .flow h2, .manifesto h2");
+  let lastScroll = window.scrollY;
+  let velocity = 0;
+  function scrollLoop() {
+    const cur = window.scrollY;
+    velocity = velocity * 0.85 + (cur - lastScroll) * 0.15;
+    lastScroll = cur;
+    const w = Math.max(400, Math.min(900, 500 + Math.abs(velocity) * 14));
+    headlineLines.forEach(el => {
+      el.style.fontVariationSettings = `"opsz" 96, "wght" ${Math.round(w)}`;
+    });
+    requestAnimationFrame(scrollLoop);
+  }
+  scrollLoop();
+</script>
+
+
+<!-- ═══════════════════════ MOBILE NAV ═══════════════════════ -->
+<button class="nav-fab" id="navFab" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+    <line x1="4" y1="7" x2="20" y2="7"></line>
+    <line x1="4" y1="12" x2="20" y2="12"></line>
+    <line x1="4" y1="17" x2="20" y2="17"></line>
+  </svg>
+</button>
+
+<button class="nav-top" id="navTop" type="button" aria-label="Back to top" title="Back to top">↑</button>
+
+<div class="nav-overlay" id="navOverlay"></div>
+
+<aside class="nav-drawer" id="navDrawer" role="navigation" aria-label="Section navigation">
+  <div class="nav-drawer-head">
+    <div>
+      <div class="kicker">jump to</div>
+      <div class="title">Section index</div>
+    </div>
+    <button class="nav-drawer-close" id="navDrawerClose" type="button" aria-label="Close navigation">×</button>
+  </div>
+  <nav class="nav-drawer-list" id="navDrawerList">
+    <a href="#top"><span class="num">§ cover</span><span class="name">How BiRAGAS is Validated</span></a>
+    <a href="#causion-poster"><span class="num">§ foundation</span><span class="name">Five canonical methods</span></a>
+    <a href="#t1"><span class="num">tier 01</span><span class="name">The Math — settled</span></a>
+    <a href="#t2"><span class="num">tier 02</span><span class="name">The Implementation</span></a>
+    <a href="#t3"><span class="num">tier 03</span><span class="name">The Posture</span></a>
+    <a href="#flow"><span class="num">§ roadmap</span><span class="name">12-Month Roadmap</span></a>
+    <a href="#manifesto"><span class="num">§ manifesto</span><span class="name">The Defensive Thesis</span></a>
+  </nav>
+</aside>
+
+<script>
+(function(){
+  const fab     = document.getElementById('navFab');
+  const close   = document.getElementById('navDrawerClose');
+  const drawer  = document.getElementById('navDrawer');
+  const overlay = document.getElementById('navOverlay');
+  const top     = document.getElementById('navTop');
+  const list    = document.getElementById('navDrawerList');
+
+  function open()  {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    fab.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+  function shut() {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    fab.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+  function toggleDrawer(e) {
+    if (e) { e.stopPropagation(); }
+    if (drawer.classList.contains('open')) shut(); else open();
+  }
+  // Click only — touch-action: manipulation makes it snappy on iOS without double-fire
+  fab.addEventListener('click', toggleDrawer);
+  close.addEventListener('click', shut);
+  overlay.addEventListener('click', shut);
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') shut(); });
+
+  // close drawer on link click
+  list.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', function(e){
+      const href = a.getAttribute('href');
+      if (href && href.startsWith('#')) {
+        const targetId = href.slice(1);
+        // Resolve to the LAST element with this ID (in case of duplicate IDs)
+        const targets = document.querySelectorAll('#' + CSS.escape(targetId) + ', [id="' + targetId + '"]');
+        if (targets.length > 0) {
+          e.preventDefault();
+          shut();
+          // Pick the right target — prefer a SECTION over a trail
+          let target = targets[targets.length - 1];
+          for (const t of targets) {
+            if (t.tagName === 'SECTION' || t.tagName === 'HEADER') { target = t; break; }
+          }
+          setTimeout(() => target.scrollIntoView({ behavior: 'smooth', block: 'start' }), 200);
+          return;
+        }
+      }
+      shut();
+    });
+  });
+
+  // sections to top - back-to-top button
+  function onScroll() {
+    if (window.scrollY > window.innerHeight * 1.5) top.classList.add('show');
+    else top.classList.remove('show');
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  top.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+  // mark the "current" section in the drawer as we scroll
+  const targets = ['causion-poster','t1','t2','t3','flow','manifesto'].map(id => document.getElementById(id)).filter(Boolean);
+  function updateCurrent() {
+    const mid = window.scrollY + window.innerHeight * 0.35;
+    let active = null;
+    for (const t of targets) {
+      if (t.offsetTop <= mid) active = t;
+    }
+    list.querySelectorAll('a').forEach(a => a.classList.remove('current'));
+    if (active) {
+      const a = list.querySelector('a[href="#' + active.id + '"]');
+      if (a) a.classList.add('current');
+    } else {
+      // cover (top of page)
+      const a = list.querySelector('a[href="#top"]');
+      if (a) a.classList.add('current');
+    }
+  }
+  window.addEventListener('scroll', updateCurrent, { passive: true });
+  updateCurrent();
+})();
+</script>
+
+</body>
+</html>
