@@ -1237,75 +1237,39 @@
   }
   [data-audio].flashing { animation: audioflash 360ms ease-out; }
 
-  /* ═══════════════════════ ALWAYS-VISIBLE SECTION NAV ═══════════════════════ */
-  .sn {
+  /* ═══════════════════════ SIDE ARROW NAV — DEAD SIMPLE ═══════════════════════ */
+  .arrow {
     position: fixed;
-    bottom: max(20px, calc(env(safe-area-inset-bottom, 0px) + 20px));
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1500;
-    display: flex;
-    align-items: stretch;
-    gap: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
     background: var(--ink);
-    border: 2px solid var(--chartreuse);
-    border-radius: 40px;
-    box-shadow: 0 18px 48px rgba(0,0,0,0.55), 0 0 0 6px rgba(217,242,92,0.12);
-    overflow: hidden;
+    color: var(--chartreuse);
+    border: 3px solid var(--chartreuse);
+    cursor: pointer;
+    z-index: 2000;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    box-shadow: 0 12px 36px rgba(0,0,0,0.55), 0 0 0 8px rgba(217,242,92,0.18);
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
     user-select: none;
-    max-width: 94vw;
+    transition: transform 0.14s ease, background 0.18s ease, color 0.18s ease;
+    padding: 0;
+    line-height: 1;
   }
-  .sn button {
-    background: transparent;
-    border: none;
-    color: var(--cream);
-    font-family: var(--font-mono);
-    font-size: 14px;
-    font-weight: 800;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    padding: 0 22px;
-    min-height: 60px;
-    min-width: 84px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center; gap: 6px;
-    transition: background 0.18s ease, color 0.18s ease, transform 0.1s ease;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    white-space: nowrap;
-  }
-  .sn button:hover { background: rgba(217,242,92,0.12); }
-  .sn button:active { transform: scale(0.96); background: var(--chartreuse); color: var(--ink); }
-  .sn .next { background: var(--chartreuse); color: var(--ink); border-left: 2px solid var(--ink); }
-  .sn .next:hover { background: var(--chartreuse); filter: brightness(1.1); }
-  .sn button:disabled { opacity: 0.3; cursor: default; pointer-events: none; }
-
-  .sn .pos {
-    color: var(--chartreuse);
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.16em;
-    text-transform: lowercase;
-    padding: 0 18px;
-    min-width: 200px;
-    display: flex; align-items: center; justify-content: center;
-    gap: 8px;
-    border-left: 1px solid rgba(217,242,92,0.3);
-    border-right: 1px solid rgba(217,242,92,0.3);
-    text-align: center;
-    line-height: 1.1;
-    background: var(--mulberry);
-  }
-  .sn .pos .pos-num { color: var(--cream); font-size: 14px; font-weight: 800; }
-  .sn .pos .pos-name { color: var(--cream); font-style: italic; font-family: var(--font-display); font-size: 14px; font-weight: 500; text-transform: capitalize; letter-spacing: 0.02em; }
-
-  @media (max-width: 640px) {
-    .sn button { padding: 0 14px; font-size: 12px; min-width: 70px; min-height: 56px; }
-    .sn .pos { min-width: 130px; padding: 0 10px; font-size: 10px; }
-    .sn .pos .pos-num { font-size: 12px; }
-    .sn .pos .pos-name { font-size: 12px; }
+  .arrow:hover { background: var(--chartreuse); color: var(--ink); }
+  .arrow:active { transform: translateY(-50%) scale(0.92); background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
+  .arrow.left  { left: 18px; }
+  .arrow.right { right: 18px; }
+  @media (max-width: 540px) {
+    .arrow { width: 54px; height: 54px; font-size: 24px; }
+    .arrow.left  { left: 12px; }
+    .arrow.right { right: 12px; }
   }
 
   /* ═══════════════════════ MOBILE NAV ═══════════════════════ */
@@ -2038,18 +2002,15 @@
   }
   scrollLoop();
 </script><button id="secNext" type="button" class="next" aria-label="Next section">next →</button>
+</div><button id="snNext" type="button" class="next" aria-label="Next section">next →</button>
 </div>
 
 
-<!-- always-visible section nav · prev · current-name · next -->
-<div class="sn" id="sn" role="navigation" aria-label="Section navigation">
-  <button id="snPrev" type="button" aria-label="Previous section">← prev</button>
-  <div class="pos" aria-live="polite">
-    <span class="pos-num" id="snNum">01</span>
-    <span class="pos-name" id="snName">cover</span>
-  </div>
-  <button id="snNext" type="button" class="next" aria-label="Next section">next →</button>
-</div>
+<!-- side arrow nav · inline onclick · always works -->
+<button class="arrow left"  type="button" aria-label="Scroll up"
+  onclick="window.scrollBy({top: -(window.innerHeight * 0.9), behavior: 'smooth'});">↑</button>
+<button class="arrow right" type="button" aria-label="Scroll down"
+  onclick="window.scrollBy({top:  (window.innerHeight * 0.9), behavior: 'smooth'});">↓</button>
 
 <!-- ═══════════════════════ MOBILE NAV ═══════════════════════ -->
 <button class="nav-fab" id="navFab" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="navDrawer">
@@ -2167,98 +2128,5 @@
   window.addEventListener('scroll', updateCurrent, { passive: true });
   updateCurrent();
 })();
-</script>
-<script>
-(function() {
-  const SECTIONS = [
-    { id: null,              name: "Cover" },
-    { id: "causion-poster",  name: "Five Methods" },
-    { id: "t1",              name: "Tier 1 · Math" },
-    { id: "t2",              name: "Tier 2 · Code" },
-    { id: "t3",              name: "Tier 3 · Posture" },
-    { id: "flow",            name: "Roadmap" },
-    { id: "manifesto",       name: "Manifesto" }
-  ];
-
-  const sn      = document.getElementById('sn');
-  const snPrev  = document.getElementById('snPrev');
-  const snNext  = document.getElementById('snNext');
-  const snNum   = document.getElementById('snNum');
-  const snName  = document.getElementById('snName');
-  if (!sn) return;
-
-  function getElement(idx) {
-    const id = SECTIONS[idx].id;
-    if (!id) return null;
-    const els = document.querySelectorAll('[id="' + id + '"]');
-    for (const el of els) {
-      if (el.tagName === 'SECTION' || el.tagName === 'HEADER') return el;
-    }
-    return els[els.length - 1] || null;
-  }
-
-  function getOffsetTop(el) {
-    let top = 0;
-    while (el) { top += el.offsetTop; el = el.offsetParent; }
-    return top;
-  }
-
-  function scrollToIdx(idx) {
-    if (idx < 0 || idx >= SECTIONS.length) return;
-    const el = getElement(idx);
-    let target;
-    if (el === null) target = 0;
-    else target = getOffsetTop(el) - 8;
-    window.scrollTo({ top: target, behavior: 'smooth' });
-  }
-
-  function currentIdx() {
-    const mid = window.scrollY + window.innerHeight * 0.3;
-    let active = 0;
-    for (let i = 1; i < SECTIONS.length; i++) {
-      const el = getElement(i);
-      if (el && getOffsetTop(el) <= mid) active = i;
-    }
-    return active;
-  }
-
-  function refresh() {
-    const idx = currentIdx();
-    snNum.textContent = String(idx + 1).padStart(2, '0') + '/' + String(SECTIONS.length).padStart(2, '0');
-    snName.textContent = SECTIONS[idx].name;
-    snPrev.disabled = idx === 0;
-    snNext.disabled = idx === SECTIONS.length - 1;
-  }
-
-  snPrev.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    scrollToIdx(currentIdx() - 1);
-  });
-  snNext.addEventListener('click', function(e) {
-    e.preventDefault();
-    e.stopPropagation();
-    scrollToIdx(currentIdx() + 1);
-  });
-
-  document.addEventListener('keydown', function(e) {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
-      e.preventDefault(); scrollToIdx(currentIdx() + 1);
-    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
-      e.preventDefault(); scrollToIdx(currentIdx() - 1);
-    } else if (e.key === 'Home') {
-      e.preventDefault(); scrollToIdx(0);
-    } else if (e.key === 'End') {
-      e.preventDefault(); scrollToIdx(SECTIONS.length - 1);
-    }
-  });
-
-  window.addEventListener('scroll', refresh, { passive: true });
-  window.addEventListener('resize', refresh);
-  refresh();
-})();
-</script>
-
-</body>
+</script></body>
 </html>
