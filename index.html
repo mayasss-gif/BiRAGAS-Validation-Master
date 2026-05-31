@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BiRAGAS · Validation Master — How We Defend the Claim</title>
+<title>BiRAGAS · Validation Master · v2 — Causal Atlas Design + Working Audio</title>
 <meta name="description" content="BiRAGAS Validation Master — the comprehensive defensive brief for every causal-inference claim. 9 validation levels · 5 canonical methods · 26 tracked claims · operational today.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1205,6 +1205,71 @@
   .audio-status.show { transform: translate(-50%, 0); opacity: 1; }
   .audio-status.error { color: var(--hot-pink); border-color: var(--hot-pink); }
 
+  
+  /* ═══════════════════════ V2 AUDIO · FLOATING FAB + STATUS ═══════════════════════ */
+  .audio-fab {
+    position: fixed;
+    bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+    left: 18px;
+    min-width: 80px; height: 64px;
+    padding: 0 22px;
+    border-radius: 32px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--cream);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    cursor: pointer;
+    z-index: 1500;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 800;
+    letter-spacing: 0.14em; text-transform: lowercase;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: transform 0.12s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+  }
+  .audio-fab:active { transform: scale(0.93); }
+  .audio-fab.on {
+    background: var(--chartreuse);
+    color: var(--ink);
+    border-color: var(--chartreuse);
+    box-shadow: 0 14px 40px rgba(217,242,92,0.5), 0 0 0 8px rgba(217,242,92,0.18);
+  }
+  .audio-fab.on .icon::after { content: "🔊"; }
+  .audio-fab:not(.on) .icon::after { content: "🔇"; }
+  .audio-fab .icon { font-size: 18px; line-height: 1; }
+
+  .audio-status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -200%);
+    max-width: 94vw;
+    padding: 14px 22px;
+    background: var(--mulberry);
+    color: var(--cream);
+    border: 2px solid var(--chartreuse);
+    border-radius: 32px;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em;
+    z-index: 8000;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audio-status.show { transform: translate(-50%, 0); }
+  .audio-status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
+
+  @keyframes audioflash {
+    0%   { background-color: var(--hot-pink); color: var(--cream); }
+    100% { background-color: transparent; color: inherit; }
+  }
+  [data-audio].flashing { animation: audioflash 360ms ease-out; }
+
   /* ═══════════════════════ MOBILE NAV ═══════════════════════ */
   .nav-fab {
     position: fixed;
@@ -1323,6 +1388,11 @@
 </head>
 
 <body id="top">
+<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio narration">
+  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
+</button>
+<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
+
 
 <!-- floating audio toggle + status banner -->
 <button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio">
@@ -1699,16 +1769,18 @@
   const lag = [{x: mx, y: my}, {x: mx, y: my}, {x: mx, y: my}];
   document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
   function tick() {
-    cur.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    if (cur) cur.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
     [0.18, 0.10, 0.05].forEach((k, i) => {
       lag[i].x += (mx - lag[i].x) * k;
       lag[i].y += (my - lag[i].y) * k;
-      trails[i].style.transform = `translate(${lag[i].x}px, ${lag[i].y}px) translate(-50%, -50%)`;
-      trails[i].style.opacity = 0.4 - i * 0.12;
+      if (trails[i]) {
+        trails[i].style.transform = `translate(${lag[i].x}px, ${lag[i].y}px) translate(-50%, -50%)`;
+        trails[i].style.opacity = 0.4 - i * 0.12;
+      }
     });
     requestAnimationFrame(tick);
   }
-  tick();
+  if (cur || trails[0]) tick();
 
   document.querySelectorAll("a, button, .card, .ask-bar, .top-strip, .marquee-lane").forEach(el => {
     el.addEventListener("mouseenter", () => { cur.style.width = "56px"; cur.style.height = "56px"; });
@@ -1754,33 +1826,38 @@
   }, { threshold: 0.4 });
   document.querySelectorAll(".stats").forEach(el => countersIO.observe(el));
 
-  // ── ask-bar typer rotation ──
+  // ── ask-bar typer rotation · GUARDED (validation deck has no ask-bar) ──
   const typer = document.getElementById("typer");
-  const prompts = [
-    "Find DEGs between healthy and diseased samples.",
-    "Run a temporal Granger analysis with this gene set.",
-    "Build a causal DAG from these pathway hits.",
-    "Validate this target with Mendelian randomization.",
-    "Perturb FLT3 in silico across the AML cohort.",
-    "Map directed causal edges for these genes."
-  ];
-  let pIdx = 0, cIdx = 0, deleting = false;
-  function typeStep() {
-    const cur = prompts[pIdx];
-    if (!deleting) {
-      cIdx++;
-      typer.textContent = cur.slice(0, cIdx);
-      if (cIdx >= cur.length) { deleting = true; setTimeout(typeStep, 2200); return; }
-    } else {
-      cIdx--;
-      typer.textContent = cur.slice(0, cIdx);
-      if (cIdx <= 0) { deleting = false; pIdx = (pIdx + 1) % prompts.length; }
+  if (typer) {
+    const prompts = [
+      "Find DEGs between healthy and diseased samples.",
+      "Run a temporal Granger analysis with this gene set.",
+      "Build a causal DAG from these pathway hits.",
+      "Validate this target with Mendelian randomization.",
+      "Perturb FLT3 in silico across the AML cohort.",
+      "Map directed causal edges for these genes."
+    ];
+    let pIdx = 0, cIdx = 0, deleting = false;
+    function typeStep() {
+      const cur = prompts[pIdx];
+      if (!deleting) {
+        cIdx++;
+        typer.textContent = cur.slice(0, cIdx);
+        if (cIdx >= cur.length) { deleting = true; setTimeout(typeStep, 2200); return; }
+      } else {
+        cIdx--;
+        typer.textContent = cur.slice(0, cIdx);
+        if (cIdx <= 0) { deleting = false; pIdx = (pIdx + 1) % prompts.length; }
+      }
+      setTimeout(typeStep, deleting ? 30 : 55);
     }
-    setTimeout(typeStep, deleting ? 30 : 55);
+    typeStep();
   }
-  typeStep();
 
-  // ── audio · clickable titles + global toggle (ROBUST · v3) ──
+  // ════════════════════════════════════════════════════════════════════════════
+  //   V2 AUDIO · MATCHES THE WORKING V4 PATTERN
+  //   user confirmed v4 audio works → mirror its exact src+load+play sequence here
+  // ════════════════════════════════════════════════════════════════════════════
   const player    = document.getElementById("player");
   const audioBtn  = document.getElementById("audioBtn");
   const audioBtnLbl = document.getElementById("audioBtnLabel");
@@ -1790,28 +1867,27 @@
   const nowPlay   = document.getElementById("nowPlay");
   const npLabel   = document.getElementById("npLabel");
   const npClose   = document.getElementById("npClose");
-  let audioOn = false;
-  let audioPrimed = false;
+
+  let activeButton = null;
   let activeKey = null;
   let statusTimer = null;
 
-  // VISIBLE STATUS BANNER · so we can SEE what's happening
   function showStatus(msg, isError) {
     if (!audioStatus) return;
     audioStatus.textContent = msg;
     audioStatus.classList.toggle("error", !!isError);
     audioStatus.classList.add("show");
     clearTimeout(statusTimer);
-    statusTimer = setTimeout(() => audioStatus.classList.remove("show"), isError ? 5500 : 2200);
+    statusTimer = setTimeout(() => audioStatus.classList.remove("show"), isError ? 5500 : 2500);
   }
 
-  function setBtnState() {
-    if (audioBtn)  { audioBtn.classList.toggle("on", audioOn); audioBtn.setAttribute("aria-pressed", audioOn ? "true" : "false"); }
-    if (audioBtnLbl) audioBtnLbl.textContent = audioOn ? "audio · on" : "audio · off";
-    if (audioFab)  { audioFab.classList.toggle("on", audioOn); audioFab.setAttribute("aria-pressed", audioOn ? "true" : "false"); }
-    if (audioFabLbl) audioFabLbl.textContent = audioOn ? "audio · on" : "audio · off";
+  function setOnUI(on) {
+    if (audioBtn)    { audioBtn.classList.toggle("on", on); audioBtn.setAttribute("aria-pressed", on); }
+    if (audioBtnLbl)   audioBtnLbl.textContent = on ? "audio · on" : "audio · off";
+    if (audioFab)    { audioFab.classList.toggle("on", on); audioFab.setAttribute("aria-pressed", on); }
+    if (audioFabLbl)   audioFabLbl.textContent = on ? "audio · on" : "audio · off";
   }
-  setBtnState();
+  setOnUI(false);
 
   function paintActive() {
     document.querySelectorAll("[data-audio]").forEach(el => {
@@ -1819,128 +1895,100 @@
     });
   }
 
+  function flashElement(el) {
+    el.classList.remove("flashing");
+    void el.offsetWidth;
+    el.classList.add("flashing");
+    setTimeout(() => el.classList.remove("flashing"), 400);
+  }
+
   function stopAudio() {
-    try { player.pause(); } catch(_) {}
+    player.pause();
     activeKey = null;
+    activeButton = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+    setOnUI(false);
   }
 
-  // iOS Safari requires the FIRST audio.play() to happen synchronously inside
-  // a user-gesture handler. We prime the element with a 1-frame silent play
-  // on the first tap; subsequent src changes then work without restriction.
-  const SILENT_MP3 = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAAEgABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFj/////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQAAAAAAAAABIBzybLHAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-
-  function primeAudio() {
-    if (audioPrimed) return Promise.resolve();
-    return new Promise((resolve) => {
-      try {
-        player.src = SILENT_MP3;
-        const p = player.play();
-        if (p && typeof p.then === "function") {
-          p.then(() => { audioPrimed = true; resolve(); })
-           .catch(err => { resolve(); /* prime failed, will try anyway */ });
-        } else {
-          audioPrimed = true; resolve();
-        }
-      } catch(err) { resolve(); }
-    });
-  }
-
-  function playFor(el) {
-    const key = el.dataset.audio;
-    const src = el.dataset.audioSrc;
-    const label = el.dataset.label || key;
+  // EXACT V4 PATTERN — set src, call load, call play. Nothing else.
+  function playSrc(src, label, key, el) {
     if (activeKey === key && !player.paused) {
       stopAudio();
       showStatus("stopped");
       return;
     }
-    if (!audioOn) { audioOn = true; setBtnState(); }
-    showStatus("loading · " + (label.length > 40 ? label.slice(0, 40) + "…" : label));
+    showStatus("loading · " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
 
-    // SYNCHRONOUSLY set src + call play() inside the gesture window
-    try {
-      player.src = src;
-      player.load();
-      const playPromise = player.play();
-      if (playPromise && typeof playPromise.then === "function") {
-        playPromise.then(() => {
-          activeKey = key;
+    player.src = src;
+    player.load();
+    const p = player.play();
+
+    if (p && typeof p.then === "function") {
+      p.then(() => {
+        activeKey = key;
+        if (el) {
           npLabel.textContent = label;
           nowPlay.classList.add("on");
-          nowPlay.classList.toggle("is-sub", key.endsWith("_sub"));
-          paintActive();
-          audioPrimed = true;
-          showStatus("▶ " + (label.length > 40 ? label.slice(0, 40) + "…" : label));
-        }).catch(err => {
-          // VISIBLE error so we can debug
-          const name = err && err.name ? err.name : "Error";
-          const msg = err && err.message ? err.message : String(err);
-          activeKey = null;
-          nowPlay.classList.remove("on", "is-sub");
-          paintActive();
-          showStatus(`⚠ ${name}: ${msg}`.slice(0, 90), true);
-          console.error("[audio] play failed:", err, "src:", src);
-        });
-      } else {
-        // Older browsers — assume it worked
-        activeKey = key;
-        npLabel.textContent = label;
-        nowPlay.classList.add("on");
+          nowPlay.classList.toggle("is-sub", key && key.endsWith("_sub"));
+        }
         paintActive();
-        showStatus("▶ " + label);
-      }
-    } catch(err) {
-      showStatus("⚠ " + (err.message || err), true);
-      console.error("[audio] sync error:", err);
+        setOnUI(true);
+        showStatus("▶ " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
+      }).catch(err => {
+        const name = (err && err.name) || "Error";
+        const msg  = (err && err.message) || String(err);
+        showStatus("⚠ " + name + " — " + msg.slice(0, 60), true);
+        console.error("[v2] play failed:", err, "src:", src);
+        setOnUI(false);
+      });
     }
   }
 
-  // ── Click handler ── using both pointerdown (instant on mobile) AND click (fallback),
-  // with a dedup flag so we don't double-fire.
-  let lastFireTs = 0;
-  function handleAudioTrigger(e) {
-    const el = e.target.closest("[data-audio]");
-    if (!el) return;
-    const now = Date.now();
-    if (now - lastFireTs < 400) return;  // dedup
-    lastFireTs = now;
+  // Top-strip audio button + floating FAB — both tap to play overview
+  function audioBtnTap(e) {
     e.preventDefault();
     e.stopPropagation();
-    playFor(el);
+    if (activeKey === "overview" && !player.paused) {
+      stopAudio();
+      showStatus("audio · off");
+    } else {
+      playSrc("audio/overview.mp3", "Overview · How BiRAGAS is Validated", "overview", null);
+    }
   }
-  document.addEventListener("click", handleAudioTrigger);
+  if (audioBtn) audioBtn.addEventListener("click", audioBtnTap);
+  if (audioFab) audioFab.addEventListener("click", audioBtnTap);
 
-  // ── Toggle handler — for both the top-strip button AND the floating FAB ──
-  function toggleAudio(e) {
-    if (e) e.stopPropagation();
-    const now = Date.now();
-    if (now - lastFireTs < 400) return;
-    lastFireTs = now;
-    audioOn = !audioOn;
-    setBtnState();
-    showStatus(audioOn ? "audio · on" : "audio · off");
-    if (!audioOn) stopAudio();
-    if (audioOn) primeAudio();  // prime on user gesture so subsequent plays work
-  }
-  if (audioBtn) audioBtn.addEventListener("click", toggleAudio);
-  if (audioFab) audioFab.addEventListener("click", toggleAudio);
+  // Each [data-audio] title gets a DIRECT click handler
+  document.querySelectorAll("[data-audio]").forEach(el => {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      flashElement(el);
+      playSrc(el.dataset.audioSrc, el.dataset.label || el.dataset.audio, el.dataset.audio, el);
+    });
+  });
 
   if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
+
   player.addEventListener("ended", () => {
     activeKey = null;
+    activeButton = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+    setOnUI(false);
     showStatus("ended");
   });
-  player.addEventListener("error", (e) => {
+  player.addEventListener("error", () => {
     const err = player.error;
     const codes = { 1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED" };
     const code = err ? (codes[err.code] || ("CODE_" + err.code)) : "UNKNOWN";
-    showStatus(`⚠ audio error · ${code}`, true);
-    console.error("[audio] element error:", err);
+    showStatus("⚠ audio · " + code, true);
+    console.error("[v2] element error:", err);
+    setOnUI(false);
   });
+  console.log("[v2] audio ready · " + document.querySelectorAll("[data-audio]").length + " titles wired");
 
   // ── variable-font weight tied to scroll ──
   const headlineLines = document.querySelectorAll(".cover-headline .line, .causion-poster h2, .flow h2, .manifesto h2");

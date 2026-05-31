@@ -1769,16 +1769,18 @@
   const lag = [{x: mx, y: my}, {x: mx, y: my}, {x: mx, y: my}];
   document.addEventListener("mousemove", e => { mx = e.clientX; my = e.clientY; });
   function tick() {
-    cur.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
+    if (cur) cur.style.transform = `translate(${mx}px, ${my}px) translate(-50%, -50%)`;
     [0.18, 0.10, 0.05].forEach((k, i) => {
       lag[i].x += (mx - lag[i].x) * k;
       lag[i].y += (my - lag[i].y) * k;
-      trails[i].style.transform = `translate(${lag[i].x}px, ${lag[i].y}px) translate(-50%, -50%)`;
-      trails[i].style.opacity = 0.4 - i * 0.12;
+      if (trails[i]) {
+        trails[i].style.transform = `translate(${lag[i].x}px, ${lag[i].y}px) translate(-50%, -50%)`;
+        trails[i].style.opacity = 0.4 - i * 0.12;
+      }
     });
     requestAnimationFrame(tick);
   }
-  tick();
+  if (cur || trails[0]) tick();
 
   document.querySelectorAll("a, button, .card, .ask-bar, .top-strip, .marquee-lane").forEach(el => {
     el.addEventListener("mouseenter", () => { cur.style.width = "56px"; cur.style.height = "56px"; });
@@ -1824,31 +1826,33 @@
   }, { threshold: 0.4 });
   document.querySelectorAll(".stats").forEach(el => countersIO.observe(el));
 
-  // ── ask-bar typer rotation ──
+  // ── ask-bar typer rotation · GUARDED (validation deck has no ask-bar) ──
   const typer = document.getElementById("typer");
-  const prompts = [
-    "Find DEGs between healthy and diseased samples.",
-    "Run a temporal Granger analysis with this gene set.",
-    "Build a causal DAG from these pathway hits.",
-    "Validate this target with Mendelian randomization.",
-    "Perturb FLT3 in silico across the AML cohort.",
-    "Map directed causal edges for these genes."
-  ];
-  let pIdx = 0, cIdx = 0, deleting = false;
-  function typeStep() {
-    const cur = prompts[pIdx];
-    if (!deleting) {
-      cIdx++;
-      typer.textContent = cur.slice(0, cIdx);
-      if (cIdx >= cur.length) { deleting = true; setTimeout(typeStep, 2200); return; }
-    } else {
-      cIdx--;
-      typer.textContent = cur.slice(0, cIdx);
-      if (cIdx <= 0) { deleting = false; pIdx = (pIdx + 1) % prompts.length; }
+  if (typer) {
+    const prompts = [
+      "Find DEGs between healthy and diseased samples.",
+      "Run a temporal Granger analysis with this gene set.",
+      "Build a causal DAG from these pathway hits.",
+      "Validate this target with Mendelian randomization.",
+      "Perturb FLT3 in silico across the AML cohort.",
+      "Map directed causal edges for these genes."
+    ];
+    let pIdx = 0, cIdx = 0, deleting = false;
+    function typeStep() {
+      const cur = prompts[pIdx];
+      if (!deleting) {
+        cIdx++;
+        typer.textContent = cur.slice(0, cIdx);
+        if (cIdx >= cur.length) { deleting = true; setTimeout(typeStep, 2200); return; }
+      } else {
+        cIdx--;
+        typer.textContent = cur.slice(0, cIdx);
+        if (cIdx <= 0) { deleting = false; pIdx = (pIdx + 1) % prompts.length; }
+      }
+      setTimeout(typeStep, deleting ? 30 : 55);
     }
-    setTimeout(typeStep, deleting ? 30 : 55);
+    typeStep();
   }
-  typeStep();
 
   // ════════════════════════════════════════════════════════════════════════════
   //   V2 AUDIO · MATCHES THE WORKING V4 PATTERN
