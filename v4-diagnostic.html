@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>v4 — Audio Diagnostic</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 24px; background: #f5efe0; color: #0a0a0a; line-height: 1.5; }
+  h1 { font-size: 26px; margin-bottom: 8px; }
+  .sub { color: #666; margin-bottom: 24px; font-size: 14px; }
+  button {
+    display: block; width: 100%; max-width: 420px;
+    padding: 22px 28px; margin: 12px 0;
+    font-size: 18px; font-weight: 700;
+    background: #3D0E40; color: #D9F25C;
+    border: 3px solid #D9F25C;
+    border-radius: 16px;
+    cursor: pointer;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+  button:active { transform: scale(0.97); }
+  button.playing { background: #D9F25C; color: #0a0a0a; }
+  #log {
+    margin-top: 24px;
+    padding: 16px;
+    background: #0a0a0a;
+    color: #00ff7f;
+    border-radius: 12px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 60vh;
+    overflow-y: auto;
+    border: 2px solid #333;
+  }
+  .err { color: #ff4d6b; }
+  .ok  { color: #D9F25C; }
+  .info{ color: #00d4e1; }
+</style>
+</head>
+<body>
+
+<h1>v4 · Audio Diagnostic</h1>
+<p class="sub">Tap each button. The log below tells you EXACTLY what happens — file load, tap detect, play() result, errors.</p>
+
+<button id="play1" type="button">▶ TAP TO PLAY · overview.mp3</button>
+<button id="play2" type="button">▶ TAP TO PLAY · t1.mp3</button>
+<button id="play3" type="button">⏹ STOP</button>
+
+<audio id="aud" preload="auto" controls style="display:block; width:100%; max-width:420px; margin-top:16px;"></audio>
+
+<div id="log">[booting…]</div>
+
+<script>
+(function() {
+  const log = document.getElementById('log');
+  const aud = document.getElementById('aud');
+  const b1 = document.getElementById('play1');
+  const b2 = document.getElementById('play2');
+  const b3 = document.getElementById('play3');
+
+  function L(msg, cls) {
+    const ts = new Date().toLocaleTimeString();
+    const line = '[' + ts + '] ' + msg;
+    const span = document.createElement('span');
+    span.textContent = line + '\n';
+    if (cls) span.className = cls;
+    log.appendChild(span);
+    log.scrollTop = log.scrollHeight;
+    console.log(line);
+  }
+
+  function clearLog() {
+    log.innerHTML = '';
+  }
+
+  L('Page loaded · UA: ' + navigator.userAgent.slice(0, 80), 'info');
+  L('Audio element ready · src=' + (aud.src || '(empty)'), 'info');
+
+  aud.addEventListener('loadstart',     () => L('· loadstart',     'info'));
+  aud.addEventListener('loadedmetadata',() => L('· loadedmetadata · duration ' + aud.duration.toFixed(2) + 's', 'ok'));
+  aud.addEventListener('canplay',       () => L('· canplay',       'ok'));
+  aud.addEventListener('canplaythrough',() => L('· canplaythrough','ok'));
+  aud.addEventListener('play',          () => L('· play event',    'ok'));
+  aud.addEventListener('playing',       () => L('· playing event · ✓ AUDIO SHOULD BE AUDIBLE NOW', 'ok'));
+  aud.addEventListener('pause',         () => L('· pause event',   'info'));
+  aud.addEventListener('ended',         () => L('· ended event',   'info'));
+  aud.addEventListener('error',         (e) => {
+    const err = aud.error;
+    const codes = { 1: 'MEDIA_ERR_ABORTED', 2: 'MEDIA_ERR_NETWORK', 3: 'MEDIA_ERR_DECODE', 4: 'MEDIA_ERR_SRC_NOT_SUPPORTED' };
+    L('✗ audio element error · ' + (err ? codes[err.code] : 'UNKNOWN') + (err && err.message ? ' · ' + err.message : ''), 'err');
+  });
+  aud.addEventListener('volumechange',  () => L('· volume=' + aud.volume + ' · muted=' + aud.muted, 'info'));
+  aud.addEventListener('stalled',       () => L('· stalled',       'err'));
+  aud.addEventListener('suspend',       () => L('· suspend',       'info'));
+  aud.addEventListener('waiting',       () => L('· waiting',       'info'));
+
+  function tryPlay(src, btn) {
+    clearLog();
+    L('Tap detected · button: ' + btn.id, 'info');
+    L('Setting src = "' + src + '"', 'info');
+    aud.src = src;
+    L('Calling .load()', 'info');
+    aud.load();
+    L('Calling .play()', 'info');
+    L('Volume: ' + aud.volume + ' · muted: ' + aud.muted, 'info');
+    try {
+      const p = aud.play();
+      L('.play() returned: ' + (p ? 'Promise' : 'undefined'), 'info');
+      if (p && typeof p.then === 'function') {
+        p.then(() => {
+          L('✓ .play() RESOLVED', 'ok');
+          btn.classList.add('playing');
+        }).catch(err => {
+          L('✗ .play() REJECTED · ' + err.name + ': ' + err.message, 'err');
+        });
+      }
+    } catch (err) {
+      L('✗ Sync exception: ' + err.message, 'err');
+    }
+  }
+
+  b1.addEventListener('click', (e) => { e.preventDefault(); tryPlay('audio/overview.mp3', b1); });
+  b2.addEventListener('click', (e) => { e.preventDefault(); tryPlay('audio/t1.mp3', b2); });
+  b3.addEventListener('click', (e) => {
+    e.preventDefault();
+    aud.pause();
+    aud.currentTime = 0;
+    b1.classList.remove('playing');
+    b2.classList.remove('playing');
+    L('Stopped', 'info');
+  });
+
+  L('Script ready · 3 buttons wired', 'ok');
+})();
+</script>
+
+</body>
+</html>
