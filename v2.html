@@ -1239,9 +1239,7 @@
   .audio-fab.on .icon::after { content: "🔊"; }
   .audio-fab:not(.on) .icon::after { content: "🔇"; }
   .audio-fab .icon { font-size: 18px; line-height: 1; }
-  .audio-fab .label { font-weight: 800; }
 
-  /* visible status banner */
   .audio-status {
     position: fixed;
     top: max(80px, env(safe-area-inset-top, 0px) + 80px);
@@ -1266,7 +1264,6 @@
   .audio-status.show { transform: translate(-50%, 0); }
   .audio-status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
 
-  /* visible flash feedback on any clickable title tap */
   @keyframes audioflash {
     0%   { background-color: var(--hot-pink); color: var(--cream); }
     100% { background-color: transparent; color: inherit; }
@@ -1391,9 +1388,8 @@
 </head>
 
 <body id="top">
-<!-- v2 · floating audio toggle + status banner -->
 <button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio narration">
-  <span class="icon"></span><span class="label" id="audioFabLabel">audio · off</span>
+  <span class="icon"></span><span id="audioFabLabel">audio · off</span>
 </button>
 <div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
 
@@ -1855,10 +1851,8 @@
   typeStep();
 
   // ════════════════════════════════════════════════════════════════════════════
-  //   V2 AUDIO · WORKING MODEL · DIRECT PER-ELEMENT HANDLERS
-  //   — Audio button tap = play overview + visible 'on' state
-  //   — Title taps = play that section's audio directly (no delegation)
-  //   — Full element reset (pause + clear src + load) before every new play
+  //   V2 AUDIO · MATCHES THE WORKING V4 PATTERN
+  //   user confirmed v4 audio works → mirror its exact src+load+play sequence here
   // ════════════════════════════════════════════════════════════════════════════
   const player    = document.getElementById("player");
   const audioBtn  = document.getElementById("audioBtn");
@@ -1869,9 +1863,9 @@
   const nowPlay   = document.getElementById("nowPlay");
   const npLabel   = document.getElementById("npLabel");
   const npClose   = document.getElementById("npClose");
-  let isPlaying = false;
+
+  let activeButton = null;
   let activeKey = null;
-  let activeElement = null;
   let statusTimer = null;
 
   function showStatus(msg, isError) {
@@ -1883,14 +1877,13 @@
     statusTimer = setTimeout(() => audioStatus.classList.remove("show"), isError ? 5500 : 2500);
   }
 
-  function setOnState(on) {
-    isPlaying = on;
-    if (audioBtn)  { audioBtn.classList.toggle("on", on); audioBtn.setAttribute("aria-pressed", on); }
-    if (audioBtnLbl) audioBtnLbl.textContent = on ? "audio · on" : "audio · off";
-    if (audioFab)  { audioFab.classList.toggle("on", on); audioFab.setAttribute("aria-pressed", on); }
-    if (audioFabLbl) audioFabLbl.textContent = on ? "audio · on" : "audio · off";
+  function setOnUI(on) {
+    if (audioBtn)    { audioBtn.classList.toggle("on", on); audioBtn.setAttribute("aria-pressed", on); }
+    if (audioBtnLbl)   audioBtnLbl.textContent = on ? "audio · on" : "audio · off";
+    if (audioFab)    { audioFab.classList.toggle("on", on); audioFab.setAttribute("aria-pressed", on); }
+    if (audioFabLbl)   audioFabLbl.textContent = on ? "audio · on" : "audio · off";
   }
-  setOnState(false);
+  setOnUI(false);
 
   function paintActive() {
     document.querySelectorAll("[data-audio]").forEach(el => {
@@ -1900,22 +1893,22 @@
 
   function flashElement(el) {
     el.classList.remove("flashing");
-    void el.offsetWidth;  // force reflow to restart animation
+    void el.offsetWidth;
     el.classList.add("flashing");
     setTimeout(() => el.classList.remove("flashing"), 400);
   }
 
   function stopAudio() {
-    try { player.pause(); } catch(_) {}
+    player.pause();
     activeKey = null;
-    activeElement = null;
+    activeButton = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
-    setOnState(false);
+    setOnUI(false);
   }
 
-  // Direct-play function — DOES NOT depend on any toggle/state machine
-  function play(src, label, key, el) {
+  // EXACT V4 PATTERN — set src, call load, call play. Nothing else.
+  function playSrc(src, label, key, el) {
     if (activeKey === key && !player.paused) {
       stopAudio();
       showStatus("stopped");
@@ -1923,81 +1916,64 @@
     }
     showStatus("loading · " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
 
-    // FULL RESET — iOS requires this between src changes to avoid AbortError
-    try { player.pause(); } catch(_) {}
-    player.removeAttribute("src");
-    try { player.load(); } catch(_) {}
     player.src = src;
-    try { player.load(); } catch(_) {}
-
+    player.load();
     const p = player.play();
+
     if (p && typeof p.then === "function") {
       p.then(() => {
         activeKey = key;
-        activeElement = el;
-        setOnState(true);
         if (el) {
           npLabel.textContent = label;
           nowPlay.classList.add("on");
           nowPlay.classList.toggle("is-sub", key && key.endsWith("_sub"));
         }
         paintActive();
+        setOnUI(true);
         showStatus("▶ " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
       }).catch(err => {
         const name = (err && err.name) || "Error";
         const msg  = (err && err.message) || String(err);
-        activeKey = null;
-        activeElement = null;
-        nowPlay.classList.remove("on", "is-sub");
-        paintActive();
-        setOnState(false);
-        showStatus("⚠ " + name + " — tap again to retry", true);
-        console.error("[v2 audio] play failed:", err, "src:", src);
+        showStatus("⚠ " + name + " — " + msg.slice(0, 60), true);
+        console.error("[v2] play failed:", err, "src:", src);
+        setOnUI(false);
       });
     }
   }
 
-  // ── Audio button(s) · tap = play overview + visible 'on' state ──
-  function audioButtonTap(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
-    if (isPlaying) {
+  // Top-strip audio button + floating FAB — both tap to play overview
+  function audioBtnTap(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (activeKey === "overview" && !player.paused) {
       stopAudio();
       showStatus("audio · off");
     } else {
-      play("audio/overview.mp3", "Overview · How BiRAGAS is Validated", "overview", null);
+      playSrc("audio/overview.mp3", "Overview · How BiRAGAS is Validated", "overview", null);
     }
   }
-  if (audioBtn) audioBtn.addEventListener("click", audioButtonTap);
-  if (audioFab) audioFab.addEventListener("click", audioButtonTap);
+  if (audioBtn) audioBtn.addEventListener("click", audioBtnTap);
+  if (audioFab) audioFab.addEventListener("click", audioBtnTap);
 
-  // ── Attach DIRECT per-element click handlers to every [data-audio] title ──
-  function wireTitles() {
-    const els = document.querySelectorAll("[data-audio]");
-    els.forEach(el => {
-      if (el._wired) return;
-      el._wired = true;
-      el.style.cursor = "pointer";
-      el.addEventListener("click", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        flashElement(el);
-        play(el.dataset.audioSrc, el.dataset.label || el.dataset.audio, el.dataset.audio, el);
-      });
+  // Each [data-audio] title gets a DIRECT click handler
+  document.querySelectorAll("[data-audio]").forEach(el => {
+    el.style.cursor = "pointer";
+    el.addEventListener("click", function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      flashElement(el);
+      playSrc(el.dataset.audioSrc, el.dataset.label || el.dataset.audio, el.dataset.audio, el);
     });
-    console.log("[v2 audio] wired", els.length, "title click handlers");
-  }
-  wireTitles();
+  });
 
-  // ── Now-playing chip close handler ──
   if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
 
-  // ── Lifecycle ──
   player.addEventListener("ended", () => {
     activeKey = null;
-    activeElement = null;
+    activeButton = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
-    setOnState(false);
+    setOnUI(false);
     showStatus("ended");
   });
   player.addEventListener("error", () => {
@@ -2005,8 +1981,10 @@
     const codes = { 1: "ABORTED", 2: "NETWORK", 3: "DECODE", 4: "SRC_NOT_SUPPORTED" };
     const code = err ? (codes[err.code] || ("CODE_" + err.code)) : "UNKNOWN";
     showStatus("⚠ audio · " + code, true);
-    console.error("[v2 audio] element error:", err);
+    console.error("[v2] element error:", err);
+    setOnUI(false);
   });
+  console.log("[v2] audio ready · " + document.querySelectorAll("[data-audio]").length + " titles wired");
 
   // ── variable-font weight tied to scroll ──
   const headlineLines = document.querySelectorAll(".cover-headline .line, .causion-poster h2, .flow h2, .manifesto h2");
