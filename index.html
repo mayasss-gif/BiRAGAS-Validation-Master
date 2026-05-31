@@ -964,65 +964,9 @@
     transition: color 0.2s, text-shadow 0.25s, transform 0.25s;
     position: relative;
   }
-  [data-audio]::before {
-    content: "▷";
-    display: inline-block;
-    margin-right: 0.32em;
-    font-family: var(--font-mono);
-    font-size: 0.55em;
-    color: var(--hot-pink);
-    transform: translateY(-0.15em);
-    opacity: 0.55;
-    transition: transform 0.25s, opacity 0.25s;
-  }
-  [data-audio]:hover::before { opacity: 1; transform: translateY(-0.15em) scale(1.3); }
-  [data-audio].playing::before {
-    content: "▶";
-    color: var(--chartreuse);
-    opacity: 1;
-    animation: pulse-icon 1.1s ease-in-out infinite;
-  }
-  @keyframes pulse-icon { 50% { transform: translateY(-0.15em) scale(1.18); } }
-
-  /* card titles: subtler */
-  .card .name[data-audio]::before,
-  .card .name-sub[data-audio]::before {
-    font-size: 0.5em;
-    color: var(--hot-pink);
-    margin-right: 0.4em;
-  }
-  .card .name[data-audio].playing {
-    color: var(--hot-pink);
-  }
-  .card .name[data-audio].playing::before {
-    color: var(--hot-pink);
-  }
-
-  /* ══ SUBTITLE audio · unique treatment ═════════════
-     Different voice (Andrew Neural · male), different content (poetic ethos
-     line per module), different visual cue: ◌ idle → ◉ playing, chartreuse */
-  [data-audio$="_sub"]::before {
-    content: "◌";
-    color: var(--chartreuse) !important;
-    text-shadow: 0 0 6px rgba(217,242,92,0.0);
-    transition: text-shadow 0.3s, color 0.2s, transform 0.25s, opacity 0.25s;
-  }
-  [data-audio$="_sub"]:hover::before {
-    text-shadow: 0 0 10px rgba(217,242,92,0.7);
-  }
-  [data-audio$="_sub"].playing::before {
-    content: "◉";
-    color: var(--chartreuse) !important;
-    text-shadow: 0 0 12px rgba(217,242,92,0.9);
-    animation: ring-pulse 1.3s ease-in-out infinite;
-  }
-  [data-audio$="_sub"].playing {
-    color: var(--chartreuse) !important;
-    font-style: italic;
-  }
-  @keyframes ring-pulse {
-    0%, 100% { transform: translateY(-0.15em) scale(1); text-shadow: 0 0 6px rgba(217,242,92,0.6); }
-    50%      { transform: translateY(-0.15em) scale(1.25); text-shadow: 0 0 16px rgba(217,242,92,1); }
+  /* (audio markers removed — iOS was rendering triangles as oversized emojis) */
+}
+50%      { transform: translateY(-0.15em) scale(1.25); text-shadow: 0 0 16px rgba(217,242,92,1); }
   }
 
   /* now-playing chip shifts character when a subtitle is on */
@@ -1041,13 +985,7 @@
   .now-playing .label b::before { font-size: 10px; }
 
   /* dark/light section overrides */
-  .tier.t1 [data-audio]::before,
-  .flow [data-audio]::before { color: var(--chartreuse); }
-  .tier.t1 [data-audio].playing::before,
-  .flow [data-audio].playing::before { color: var(--chartreuse); }
-  .manifesto [data-audio]::before { color: var(--hot-pink); }
-
-  /* ═════════════ AUDIO toggle button (top strip) ═════════════ */
+/* ═════════════ AUDIO toggle button (top strip) ═════════════ */
   .audio-btn {
     background: transparent;
     color: var(--cream);
@@ -1237,6 +1175,23 @@
   }
   [data-audio].flashing { animation: audioflash 360ms ease-out; }
 
+  
+  /* SAFE .playing indicator · no ::before · no transform · no layout shift */
+  [data-audio] {
+    border-bottom: 2px solid transparent;
+    padding-bottom: 2px;
+    transition: border-color 0.18s ease, color 0.18s ease;
+  }
+  [data-audio].playing {
+    border-bottom-color: var(--hot-pink);
+    color: var(--hot-pink);
+  }
+  .card .name[data-audio].playing,
+  .card .name-sub[data-audio].playing {
+    color: var(--hot-pink);
+    border-bottom-color: var(--hot-pink);
+  }
+
   /* ═══════════════════════ SIDE ARROW NAV — DEAD SIMPLE ═══════════════════════ */
   .arrow {
     position: fixed;
@@ -1389,15 +1344,7 @@
   </style>
 </head>
 
-<body id="top">
-<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
-
-
-<!-- floating audio toggle + status banner -->
-<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
-
-
-<div class="cursor" id="cur"></div>
+<body id="top"><!-- floating audio toggle + status banner --><div class="cursor" id="cur"></div>
 <div class="trail" id="trail-1"></div>
 <div class="trail" id="trail-2"></div>
 <div class="trail" id="trail-3"></div>
@@ -1420,15 +1367,7 @@
   </span>
 </div>
 
-<audio id="player" preload="auto"></audio>
-
-<div class="now-playing" id="nowPlay" role="status" aria-live="polite">
-  <span class="bars"><span></span><span></span><span></span><span></span></span>
-  <span class="label"><b>now playing</b><span id="npLabel">—</span></span>
-  <button class="close" id="npClose" type="button" aria-label="Stop">×</button>
-</div>
-
-<!-- ═══════════════════════════════════════════════════════════════
+<audio id="player" preload="auto"></audio><!-- ═══════════════════════════════════════════════════════════════
      MULTI-LANE MARQUEE
 ═════════════════════════════════════════════════════════════════ -->
 <div class="marquees">
