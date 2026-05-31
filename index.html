@@ -1776,17 +1776,14 @@
   });
 
   function toggleAudio(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (e) { e.stopPropagation(); }
     audioOn = !audioOn;
     setBtnState();
     if (!audioOn) stopAudio();
   }
+  // Click only — touch-action: manipulation on the button removes the iOS tap delay
+  // so we don't need a separate touchend handler (which would cause double-fire).
   audioBtn.addEventListener("click", toggleAudio);
-  audioBtn.addEventListener("touchend", function(e){
-    // prevent the synthetic click after touchend on iOS from firing twice
-    e.preventDefault();
-    toggleAudio();
-  }, { passive: false });
 
   npClose.addEventListener("click", stopAudio);
   player.addEventListener("ended", () => {
@@ -1867,11 +1864,11 @@
     document.body.style.overflow = '';
   }
   function toggleDrawer(e) {
-    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (e) { e.stopPropagation(); }
     if (drawer.classList.contains('open')) shut(); else open();
   }
+  // Click only — touch-action: manipulation makes it snappy on iOS without double-fire
   fab.addEventListener('click', toggleDrawer);
-  fab.addEventListener('touchend', function(e){ e.preventDefault(); toggleDrawer(); }, { passive: false });
   close.addEventListener('click', shut);
   overlay.addEventListener('click', shut);
   document.addEventListener('keydown', e => { if (e.key === 'Escape') shut(); });
