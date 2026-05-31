@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BiRAGAS · Validation Master · v2 — Fresh Audio Build</title>
+<title>BiRAGAS · Validation Master · v2 — Causal Atlas Design + Working Audio</title>
 <meta name="description" content="BiRAGAS Validation Master — the comprehensive defensive brief for every causal-inference claim. 9 validation levels · 5 canonical methods · 26 tracked claims · operational today.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1146,88 +1146,6 @@
   }
 
   
-  
-  /* ═══════════════════ V2 AUDIO OVERLAY · TAP TO ENABLE ═══════════════════ */
-  .v2-audio-gate {
-    position: fixed; inset: 0;
-    background: rgba(10,10,10,0.92);
-    color: var(--cream);
-    z-index: 9000;
-    display: flex; align-items: center; justify-content: center;
-    flex-direction: column;
-    cursor: pointer;
-    touch-action: manipulation;
-    -webkit-tap-highlight-color: transparent;
-    padding: 32px;
-    text-align: center;
-  }
-  .v2-audio-gate.dismissed { display: none; }
-  .v2-audio-gate .gate-icon {
-    width: 120px; height: 120px;
-    border-radius: 50%;
-    background: var(--chartreuse);
-    color: var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 60px;
-    margin-bottom: 28px;
-    animation: gatepulse 1.6s ease-in-out infinite;
-    box-shadow: 0 0 0 20px rgba(217,242,92,0.15), 0 0 0 40px rgba(217,242,92,0.06);
-  }
-  @keyframes gatepulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.05); } }
-  .v2-audio-gate .gate-title {
-    font-family: var(--font-display); font-style: italic;
-    font-variation-settings: "opsz" 96, "wght" 500;
-    font-size: clamp(32px, 6vw, 56px);
-    line-height: 1.05; color: var(--cream);
-    max-width: 720px;
-  }
-  .v2-audio-gate .gate-sub {
-    font-family: var(--font-mono); font-size: 12px;
-    letter-spacing: 0.2em; text-transform: lowercase;
-    color: var(--chartreuse);
-    margin-top: 18px;
-  }
-  .v2-audio-gate .gate-cta {
-    margin-top: 32px;
-    padding: 16px 36px;
-    background: var(--chartreuse); color: var(--ink);
-    border: none;
-    border-radius: 36px;
-    font-family: var(--font-mono); font-weight: 800;
-    font-size: 14px; letter-spacing: 0.2em; text-transform: uppercase;
-    cursor: pointer;
-  }
-
-  /* visible flash feedback when ANY clickable element is tapped */
-  [data-audio].v2-flash {
-    background-color: var(--hot-pink) !important;
-    color: var(--cream) !important;
-    transition: background-color 0.05s, color 0.05s;
-  }
-
-  /* big visible audio status — drops down from the top */
-  .v2-status {
-    position: fixed;
-    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
-    left: 50%;
-    transform: translate(-50%, -200%);
-    max-width: 94vw;
-    padding: 16px 24px;
-    background: var(--mulberry);
-    color: var(--cream);
-    border: 2px solid var(--chartreuse);
-    border-radius: 32px;
-    font-family: var(--font-mono); font-size: 13px; font-weight: 700;
-    letter-spacing: 0.08em;
-    z-index: 8000;
-    box-shadow: 0 16px 48px rgba(0,0,0,0.6);
-    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    pointer-events: none;
-    text-align: center;
-  }
-  .v2-status.show { transform: translate(-50%, 0); }
-  .v2-status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
-
   /* ═══════════════════════ FLOATING AUDIO + STATUS ═══════════════════════ */
   .audio-fab {
     position: fixed;
@@ -1286,6 +1204,74 @@
   }
   .audio-status.show { transform: translate(-50%, 0); opacity: 1; }
   .audio-status.error { color: var(--hot-pink); border-color: var(--hot-pink); }
+
+  
+  /* ═══════════════════════ V2 AUDIO · FLOATING FAB + STATUS ═══════════════════════ */
+  .audio-fab {
+    position: fixed;
+    bottom: max(24px, calc(env(safe-area-inset-bottom, 0px) + 24px));
+    left: 18px;
+    min-width: 80px; height: 64px;
+    padding: 0 22px;
+    border-radius: 32px;
+    background: var(--ink);
+    color: var(--cream);
+    border: 2px solid var(--cream);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    cursor: pointer;
+    z-index: 1500;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    font-family: var(--font-mono); font-size: 13px; font-weight: 800;
+    letter-spacing: 0.14em; text-transform: lowercase;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+    transition: transform 0.12s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease;
+  }
+  .audio-fab:active { transform: scale(0.93); }
+  .audio-fab.on {
+    background: var(--chartreuse);
+    color: var(--ink);
+    border-color: var(--chartreuse);
+    box-shadow: 0 14px 40px rgba(217,242,92,0.5), 0 0 0 8px rgba(217,242,92,0.18);
+  }
+  .audio-fab.on .icon::after { content: "🔊"; }
+  .audio-fab:not(.on) .icon::after { content: "🔇"; }
+  .audio-fab .icon { font-size: 18px; line-height: 1; }
+  .audio-fab .label { font-weight: 800; }
+
+  /* visible status banner */
+  .audio-status {
+    position: fixed;
+    top: max(80px, env(safe-area-inset-top, 0px) + 80px);
+    left: 50%;
+    transform: translate(-50%, -200%);
+    max-width: 94vw;
+    padding: 14px 22px;
+    background: var(--mulberry);
+    color: var(--cream);
+    border: 2px solid var(--chartreuse);
+    border-radius: 32px;
+    font-family: var(--font-mono); font-size: 12px; font-weight: 700;
+    letter-spacing: 0.06em;
+    z-index: 8000;
+    box-shadow: 0 14px 40px rgba(0,0,0,0.55);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .audio-status.show { transform: translate(-50%, 0); }
+  .audio-status.error { background: var(--hot-pink); color: var(--cream); border-color: var(--cream); }
+
+  /* visible flash feedback on any clickable title tap */
+  @keyframes audioflash {
+    0%   { background-color: var(--hot-pink); color: var(--cream); }
+    100% { background-color: transparent; color: inherit; }
+  }
+  [data-audio].flashing { animation: audioflash 360ms ease-out; }
 
   /* ═══════════════════════ MOBILE NAV ═══════════════════════ */
   .nav-fab {
@@ -1405,16 +1391,11 @@
 </head>
 
 <body id="top">
-<!-- v2 · tap-to-enable audio gate -->
-<div class="v2-audio-gate" id="v2Gate" role="button" tabindex="0" aria-label="Tap to enable audio">
-  <div class="gate-icon">🔊</div>
-  <div class="gate-title">Tap to enable audio narration.</div>
-  <div class="gate-sub">— required by ios safari · one tap unlocks all titles —</div>
-  <button class="gate-cta" type="button">Enable Audio</button>
-</div>
-
-<!-- v2 · big visible status banner -->
-<div class="v2-status" id="v2Status" role="status" aria-live="polite"></div>
+<!-- v2 · floating audio toggle + status banner -->
+<button class="audio-fab" id="audioFab" type="button" aria-pressed="false" aria-label="Toggle audio narration">
+  <span class="icon"></span><span class="label" id="audioFabLabel">audio · off</span>
+</button>
+<div class="audio-status" id="audioStatus" role="status" aria-live="polite"></div>
 
 
 <!-- floating audio toggle + status banner -->
@@ -1874,42 +1855,42 @@
   typeStep();
 
   // ════════════════════════════════════════════════════════════════════════════
-  //   V2 AUDIO · FRESH IMPLEMENTATION
-  //   — Per-element click handlers (no document delegation)
-  //   — Tap-to-enable gate primes iOS Safari on first user gesture
-  //   — Visible feedback on every interaction (flash + status banner)
-  //   — Single audio element, fully reset (src + load) before each play
+  //   V2 AUDIO · WORKING MODEL · DIRECT PER-ELEMENT HANDLERS
+  //   — Audio button tap = play overview + visible 'on' state
+  //   — Title taps = play that section's audio directly (no delegation)
+  //   — Full element reset (pause + clear src + load) before every new play
   // ════════════════════════════════════════════════════════════════════════════
   const player    = document.getElementById("player");
   const audioBtn  = document.getElementById("audioBtn");
   const audioBtnLbl = document.getElementById("audioBtnLabel");
   const audioFab  = document.getElementById("audioFab");
   const audioFabLbl = document.getElementById("audioFabLabel");
+  const audioStatus = document.getElementById("audioStatus");
   const nowPlay   = document.getElementById("nowPlay");
   const npLabel   = document.getElementById("npLabel");
   const npClose   = document.getElementById("npClose");
-  const v2Gate    = document.getElementById("v2Gate");
-  const v2Status  = document.getElementById("v2Status");
-  let audioOn = false;
-  let audioReady = false;     // true after the user has dismissed the gate (= iOS primed)
+  let isPlaying = false;
   let activeKey = null;
+  let activeElement = null;
   let statusTimer = null;
 
   function showStatus(msg, isError) {
-    if (!v2Status) return;
-    v2Status.textContent = msg;
-    v2Status.classList.toggle("error", !!isError);
-    v2Status.classList.add("show");
+    if (!audioStatus) return;
+    audioStatus.textContent = msg;
+    audioStatus.classList.toggle("error", !!isError);
+    audioStatus.classList.add("show");
     clearTimeout(statusTimer);
-    statusTimer = setTimeout(() => v2Status.classList.remove("show"), isError ? 5000 : 2400);
+    statusTimer = setTimeout(() => audioStatus.classList.remove("show"), isError ? 5500 : 2500);
   }
 
-  function setBtnState() {
-    if (audioBtn)  { audioBtn.classList.toggle("on", audioOn); audioBtn.setAttribute("aria-pressed", audioOn); }
-    if (audioBtnLbl) audioBtnLbl.textContent = audioOn ? "audio · on" : "audio · off";
-    if (audioFab)  { audioFab.classList.toggle("on", audioOn); audioFab.setAttribute("aria-pressed", audioOn); }
-    if (audioFabLbl) audioFabLbl.textContent = audioOn ? "audio · on" : "audio · off";
+  function setOnState(on) {
+    isPlaying = on;
+    if (audioBtn)  { audioBtn.classList.toggle("on", on); audioBtn.setAttribute("aria-pressed", on); }
+    if (audioBtnLbl) audioBtnLbl.textContent = on ? "audio · on" : "audio · off";
+    if (audioFab)  { audioFab.classList.toggle("on", on); audioFab.setAttribute("aria-pressed", on); }
+    if (audioFabLbl) audioFabLbl.textContent = on ? "audio · on" : "audio · off";
   }
+  setOnState(false);
 
   function paintActive() {
     document.querySelectorAll("[data-audio]").forEach(el => {
@@ -1918,35 +1899,31 @@
   }
 
   function flashElement(el) {
-    el.classList.add("v2-flash");
-    setTimeout(() => el.classList.remove("v2-flash"), 220);
+    el.classList.remove("flashing");
+    void el.offsetWidth;  // force reflow to restart animation
+    el.classList.add("flashing");
+    setTimeout(() => el.classList.remove("flashing"), 400);
   }
 
   function stopAudio() {
     try { player.pause(); } catch(_) {}
     activeKey = null;
+    activeElement = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+    setOnState(false);
   }
 
-  // ── Play handler · CALLED DIRECTLY ON EACH ELEMENT'S CLICK · INSIDE GESTURE ──
-  function playFor(el) {
-    const key = el.dataset.audio;
-    const src = el.dataset.audioSrc;
-    const label = el.dataset.label || key;
-
-    flashElement(el);
-
+  // Direct-play function — DOES NOT depend on any toggle/state machine
+  function play(src, label, key, el) {
     if (activeKey === key && !player.paused) {
       stopAudio();
       showStatus("stopped");
       return;
     }
-    if (!audioOn) { audioOn = true; setBtnState(); }
-    showStatus("loading · " + (label.length > 50 ? label.slice(0, 50) + "…" : label));
+    showStatus("loading · " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
 
-    // CRITICAL · reset element fully before each new play to avoid iOS
-    // AbortError ('the request was aborted by a new load request').
+    // FULL RESET — iOS requires this between src changes to avoid AbortError
     try { player.pause(); } catch(_) {}
     player.removeAttribute("src");
     try { player.load(); } catch(_) {}
@@ -1957,39 +1934,70 @@
     if (p && typeof p.then === "function") {
       p.then(() => {
         activeKey = key;
-        npLabel.textContent = label;
-        nowPlay.classList.add("on");
-        nowPlay.classList.toggle("is-sub", key.endsWith("_sub"));
+        activeElement = el;
+        setOnState(true);
+        if (el) {
+          npLabel.textContent = label;
+          nowPlay.classList.add("on");
+          nowPlay.classList.toggle("is-sub", key && key.endsWith("_sub"));
+        }
         paintActive();
-        showStatus("▶ " + (label.length > 50 ? label.slice(0, 50) + "…" : label));
+        showStatus("▶ " + (label.length > 44 ? label.slice(0, 44) + "…" : label));
       }).catch(err => {
         const name = (err && err.name) || "Error";
         const msg  = (err && err.message) || String(err);
         activeKey = null;
+        activeElement = null;
         nowPlay.classList.remove("on", "is-sub");
         paintActive();
-        // Show the SPECIFIC error name so the user can report it
-        showStatus("⚠ " + name + " · tap the audio gate again", true);
+        setOnState(false);
+        showStatus("⚠ " + name + " — tap again to retry", true);
         console.error("[v2 audio] play failed:", err, "src:", src);
       });
     }
   }
 
-  function toggleAudio(e) {
-    if (e) e.stopPropagation();
-    audioOn = !audioOn;
-    setBtnState();
-    showStatus(audioOn ? "audio · on" : "audio · off");
-    if (!audioOn) stopAudio();
+  // ── Audio button(s) · tap = play overview + visible 'on' state ──
+  function audioButtonTap(e) {
+    if (e) { e.preventDefault(); e.stopPropagation(); }
+    if (isPlaying) {
+      stopAudio();
+      showStatus("audio · off");
+    } else {
+      play("audio/overview.mp3", "Overview · How BiRAGAS is Validated", "overview", null);
+    }
   }
-  if (audioBtn) audioBtn.addEventListener("click", toggleAudio);
-  if (audioFab) audioFab.addEventListener("click", toggleAudio);
+  if (audioBtn) audioBtn.addEventListener("click", audioButtonTap);
+  if (audioFab) audioFab.addEventListener("click", audioButtonTap);
 
+  // ── Attach DIRECT per-element click handlers to every [data-audio] title ──
+  function wireTitles() {
+    const els = document.querySelectorAll("[data-audio]");
+    els.forEach(el => {
+      if (el._wired) return;
+      el._wired = true;
+      el.style.cursor = "pointer";
+      el.addEventListener("click", function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        flashElement(el);
+        play(el.dataset.audioSrc, el.dataset.label || el.dataset.audio, el.dataset.audio, el);
+      });
+    });
+    console.log("[v2 audio] wired", els.length, "title click handlers");
+  }
+  wireTitles();
+
+  // ── Now-playing chip close handler ──
   if (npClose) npClose.addEventListener("click", () => { stopAudio(); showStatus("stopped"); });
+
+  // ── Lifecycle ──
   player.addEventListener("ended", () => {
     activeKey = null;
+    activeElement = null;
     nowPlay.classList.remove("on", "is-sub");
     paintActive();
+    setOnState(false);
     showStatus("ended");
   });
   player.addEventListener("error", () => {
@@ -1998,61 +2006,6 @@
     const code = err ? (codes[err.code] || ("CODE_" + err.code)) : "UNKNOWN";
     showStatus("⚠ audio · " + code, true);
     console.error("[v2 audio] element error:", err);
-  });
-
-  // ── Attach DIRECT per-element click handlers ──
-  // (instead of a document-level delegate — sometimes iOS gesture context
-  //  is more reliable with direct listeners)
-  function wireAudioElements() {
-    const els = document.querySelectorAll("[data-audio]");
-    els.forEach(el => {
-      if (el._v2Wired) return;
-      el._v2Wired = true;
-      el.style.cursor = "pointer";
-      el.addEventListener("click", function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        playFor(el);
-      });
-    });
-    console.log("[v2 audio] wired", els.length, "clickable elements");
-  }
-  wireAudioElements();
-
-  // ── The gate · tap to enable + prime iOS Safari audio context ──
-  function dismissGate() {
-    // FIRST · prime the audio element inside the gesture window
-    audioReady = true;
-    audioOn = true;
-    setBtnState();
-    showStatus("audio enabled · tap any title");
-
-    // Play a silent blip to prime iOS (must be inside the gesture handler)
-    try {
-      player.src = "data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//tQwAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAEAAAEgABYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFj/////////////////////////////////////////////////////////////////8AAAAATGF2YzU4LjEzAAAAAAAAAAAAAAAAJAQAAAAAAAAABIBzybLHAAAAAAAAAAAAAAAAAAAA//sQxAADwAABpAAAACAAADSAAAAETEFNRTMuMTAwVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV";
-      player.load();
-      const p = player.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          player.pause();
-          v2Gate.classList.add("dismissed");
-        }).catch(err => {
-          // Even if priming fails, dismiss the gate — user can still try
-          showStatus("⚠ prime failed: " + (err.name || err.message), true);
-          v2Gate.classList.add("dismissed");
-        });
-      } else {
-        v2Gate.classList.add("dismissed");
-      }
-    } catch(err) {
-      showStatus("⚠ " + err.message, true);
-      v2Gate.classList.add("dismissed");
-    }
-  }
-
-  v2Gate.addEventListener("click", dismissGate);
-  v2Gate.addEventListener("keydown", function(e) {
-    if (e.key === "Enter" || e.key === " ") { e.preventDefault(); dismissGate(); }
   });
 
   // ── variable-font weight tied to scroll ──
